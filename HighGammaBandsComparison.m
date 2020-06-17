@@ -1,7 +1,16 @@
-% Analyzing the MLR for all bands and subbands
+% Analyzing the MLR for all bands and subbands of HG-LFO
+% generating the required raw/hilbert signals for LFO and HG-LFO
+% save these signals
+% in this version; also saving the index for pos max and vel max
+% for later sepearting flexion and extension, ERP analysis
+% save all these signals/indexes for later phase-coupling
+% analysis/SequentialTemporal analysis
+
 
 close all;
 clear all;
+clc;
+
 
 %% General parameters that should be specified at the begining
 
@@ -27,7 +36,7 @@ Feature=2;   % abs hilbert or envelope
 
 
 %% loading and breaking raw ECoG data into trials
-load('..\ECoGData\ECoG_data.mat');
+load('E:\ECoGLeapMotion\DataPatientTwo\ECoGData\ECoG_data.mat');
 
 % Final list of bad channels
 BadChs=[65 66 128 128+1 128+2 128+16 128+18 128+20 128+24 128+30 ...
@@ -54,7 +63,7 @@ trial_stop=trial_end_time*Fs;
 
 %% Finding the precentral (for Primary Motor=PM) and postcentral (somatosensory=SM) electrodes/channels
 
- load('..\ImagingData\TDT_elecs_all.mat')
+ load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\TDT_elecs_all.mat')
  
  PM_chs=[];
  SM_chs=[];
@@ -148,7 +157,7 @@ num_trials =8;
 
 for trial=1:num_trials
     % load trial data
-    filename = '../LeapMotionData/20180301/10h02m38s/EC171_20180301_10h02m38s_trial00';
+    filename = 'E:\ECoGLeapMotion\DataPatientTwo/LeapMotionData/20180301/10h02m38s/EC171_20180301_10h02m38s_trial00';
     load([filename,num2str(trial),'.mat']);
    
     % grab kinematics
@@ -195,14 +204,14 @@ for i=15*half_window:F1_n-(half_window+1)
     logic1=(Posq_F1(i-half_window:i+half_window,1)< Posq_F1(i,1));
     
     if sum(logic1)==2*half_window
-        FingersKinInfo.Finger(1).F2E_MaxPos(j,1)=i;
+        FingersKinInfo.Finger(1).Fs_MaxPos(j,1)=i;
         j=j+1;
     end
     
     logic2=(Posq_F1(i-half_window:i+half_window,1)> Posq_F1(i,1));
     
     if sum(logic2)==2*half_window
-        FingersKinInfo.Finger(1).E2F_MaxPos(jj,1)=i;
+        FingersKinInfo.Finger(1).Es_MaxPos(jj,1)=i;
         jj=jj+1;
     end
     
@@ -212,23 +221,23 @@ end
 % check on the plot
 figure;
 plot(Posq_F1(:,1))
-hold on; plot(FingersKinInfo.Finger(1).F2E_MaxPos,-30,'og')
-hold on; plot(FingersKinInfo.Finger(1).E2F_MaxPos,-5,'or')
+hold on; plot(FingersKinInfo.Finger(1).Fs_MaxPos,-30,'og')
+hold on; plot(FingersKinInfo.Finger(1).Es_MaxPos,-5,'or')
 
 %% F1 movement analysis: Finding the max velocity during transition from flextion to extention or extension to flextion
 
 Velq_F1=interp1(time_AllTrials{1,1},fingers{1,1}(1).svel,Xq_F1);
 AbsVel_F1=sqrt(Velq_F1(:,1).^2+Velq_F1(:,2).^2+Velq_F1(:,3).^2);
 
-Index_F1=sort([1; FingersKinInfo.Finger(1).F2E_MaxPos;...
-    FingersKinInfo.Finger(1).E2F_MaxPos; F1_n]);
+Index_F1=sort([1; FingersKinInfo.Finger(1).Fs_MaxPos;...
+    FingersKinInfo.Finger(1).Es_MaxPos; F1_n]);
 
 
 j=1;
 for i=1:2:(length(Index_F1)-1)
     Section=AbsVel_F1(Index_F1(i):(Index_F1(i+1)));
     [m_S n_S]=max(Section);
-    FingersKinInfo.Finger(1).F2E_MaxVel(1,j)=(n_S+Index_F1(i)-1);  
+    FingersKinInfo.Finger(1).Fs_MaxVel(1,j)=(n_S+Index_F1(i)-1);  
     j=j+1;
 end
 
@@ -236,7 +245,7 @@ j=1;
 for i=2:2:(length(Index_F1)-1)
     Section=AbsVel_F1(Index_F1(i):(Index_F1(i+1)));
     [m_S n_S]=max(Section);
-    FingersKinInfo.Finger(1).E2F_MaxVel(1,j)=(n_S+Index_F1(i)-1);
+    FingersKinInfo.Finger(1).Es_MaxVel(1,j)=(n_S+Index_F1(i)-1);
     j=j+1;
 end
 
@@ -244,15 +253,15 @@ end
 % check on the plot
 figure;
 plot(AbsVel_F1)
-hold on; plot(FingersKinInfo.Finger(1).F2E_MaxVel,100,'ok')
-hold on; plot(FingersKinInfo.Finger(1).E2F_MaxVel,150,'ob')
+hold on; plot(FingersKinInfo.Finger(1).Fs_MaxVel,100,'ok')
+hold on; plot(FingersKinInfo.Finger(1).Es_MaxVel,150,'ob')
 
 figure;
 plot(Posq_F1(:,1))
-hold on; plot(FingersKinInfo.Finger(1).F2E_MaxPos,-30,'og')
-hold on; plot(FingersKinInfo.Finger(1).E2F_MaxPos,-5,'or')
-hold on; vline(FingersKinInfo.Finger(1).F2E_MaxVel,'g--')
-hold on; vline(FingersKinInfo.Finger(1).E2F_MaxVel,'r--')
+hold on; plot(FingersKinInfo.Finger(1).Fs_MaxPos,-30,'og')
+hold on; plot(FingersKinInfo.Finger(1).Es_MaxPos,-5,'or')
+hold on; vline(FingersKinInfo.Finger(1).Fs_MaxVel,'g--')
+hold on; vline(FingersKinInfo.Finger(1).Es_MaxVel,'r--')
 
 FingersKinData.Finger(1).PurePos=Posq_F1(:,1);
 FingersKinData.Finger(1).PureVel=AbsVel_F1;
@@ -279,14 +288,14 @@ for i=10*half_window:F2_n-(half_window+1)
     logic1=(Posq_F2(i-half_window:i+half_window,3)< Posq_F2(i,3));
     
     if sum(logic1)==2*half_window
-        FingersKinInfo.Finger(2).F2E_MaxPos(j,1)=i;
+        FingersKinInfo.Finger(2).Fs_MaxPos(j,1)=i;
         j=j+1;   
     end
     
     logic2=(Posq_F2(i-half_window:i+half_window,3)> Posq_F2(i,3));
     
     if sum(logic2)==2*half_window
-        FingersKinInfo.Finger(2).E2F_MaxPos(jj,1)=i;
+        FingersKinInfo.Finger(2).Es_MaxPos(jj,1)=i;
         jj=jj+1;  
     end
     
@@ -296,22 +305,22 @@ end
 % check on the plot
 figure;
 plot(Posq_F2(:,3))
-hold on; plot(FingersKinInfo.Finger(2).F2E_MaxPos,-80,'og')
-hold on; plot(FingersKinInfo.Finger(2).E2F_MaxPos,-50,'or')
+hold on; plot(FingersKinInfo.Finger(2).Fs_MaxPos,-80,'og')
+hold on; plot(FingersKinInfo.Finger(2).Es_MaxPos,-50,'or')
 
 %% F2 movement analysis: Finding the max velocity during transition from flextion to extention or extension to flextion
 
 Velq_F2=interp1(time_AllTrials{1,2},fingers{1,2}(2).svel,Xq_F2);
 AbsVel_F2=sqrt(Velq_F2(:,1).^2+Velq_F2(:,2).^2+Velq_F2(:,3).^2);
 
-Index_F2=sort([1; FingersKinInfo.Finger(2).F2E_MaxPos;...
-    FingersKinInfo.Finger(2).E2F_MaxPos; F2_n]);
+Index_F2=sort([1; FingersKinInfo.Finger(2).Fs_MaxPos;...
+    FingersKinInfo.Finger(2).Es_MaxPos; F2_n]);
 
 j=1;
 for i=1:2:(length(Index_F2)-1)
     Section=AbsVel_F2(Index_F2(i):(Index_F2(i+1)));
     [m_S n_S]=max(Section);
-    FingersKinInfo.Finger(2).F2E_MaxVel(1,j)=(n_S+Index_F2(i)-1);
+    FingersKinInfo.Finger(2).Fs_MaxVel(1,j)=(n_S+Index_F2(i)-1);
     j=j+1;
     
 end
@@ -320,7 +329,7 @@ j=1;
 for i=2:2:(length(Index_F2)-1)
     Section=AbsVel_F2(Index_F2(i):(Index_F2(i+1)));
     [m_S n_S]=max(Section);
-    FingersKinInfo.Finger(2).E2F_MaxVel(1,j)=(n_S+Index_F2(i)-1);
+    FingersKinInfo.Finger(2).Es_MaxVel(1,j)=(n_S+Index_F2(i)-1);
     j=j+1;
 end
 
@@ -328,15 +337,15 @@ end
 % check on the plot
 figure;
 plot(AbsVel_F2)
-hold on; plot(FingersKinInfo.Finger(2).F2E_MaxVel,100,'ok')
-hold on; plot(FingersKinInfo.Finger(2).E2F_MaxVel,150,'ob')
+hold on; plot(FingersKinInfo.Finger(2).Fs_MaxVel,100,'ok')
+hold on; plot(FingersKinInfo.Finger(2).Es_MaxVel,150,'ob')
 
 figure;
 plot(Posq_F2(:,3))
-hold on; plot(FingersKinInfo.Finger(2).F2E_MaxPos,-80,'og')
-hold on; plot(FingersKinInfo.Finger(2).E2F_MaxPos,-50,'or')
-hold on; vline(FingersKinInfo.Finger(2).F2E_MaxVel,'g--')
-hold on; vline(FingersKinInfo.Finger(2).E2F_MaxVel,'r--')
+hold on; plot(FingersKinInfo.Finger(2).Fs_MaxPos,-80,'og')
+hold on; plot(FingersKinInfo.Finger(2).Es_MaxPos,-50,'or')
+hold on; vline(FingersKinInfo.Finger(2).Fs_MaxVel,'g--')
+hold on; vline(FingersKinInfo.Finger(2).Es_MaxVel,'r--')
 
 FingersKinData.Finger(2).PurePos=Posq_F2(:,3);
 FingersKinData.Finger(2).PureVel=AbsVel_F2;
@@ -359,40 +368,40 @@ for i=10*half_window:F3_n-(half_window+1)
     logic1=(Posq_F3(i-half_window:i+half_window,3)< Posq_F3(i,3));
     
     if sum(logic1)==2*half_window
-        FingersKinInfo.Finger(3).F2E_MaxPos(j,1)=i;
+        FingersKinInfo.Finger(3).Fs_MaxPos(j,1)=i;
         j=j+1;  
     end
     
     logic2=(Posq_F3(i-half_window:i+half_window,3)> Posq_F3(i,3));
     
     if sum(logic2)==2*half_window
-        FingersKinInfo.Finger(3).E2F_MaxPos(jj,1)=i;
+        FingersKinInfo.Finger(3).Es_MaxPos(jj,1)=i;
         jj=jj+1;
     end
     
     
 end
 
-FingersKinInfo.Finger(3).F2E_MaxPos=FingersKinInfo.Finger(3).F2E_MaxPos([1:3,5:end]);
+FingersKinInfo.Finger(3).Fs_MaxPos=FingersKinInfo.Finger(3).Fs_MaxPos([1:3,5:end]);
 % check on the plot
 figure;
 plot(Posq_F3(:,3))
-hold on; plot(FingersKinInfo.Finger(3).F2E_MaxPos,-80,'og')
-hold on; plot(FingersKinInfo.Finger(3).E2F_MaxPos,-50,'or')
+hold on; plot(FingersKinInfo.Finger(3).Fs_MaxPos,-80,'og')
+hold on; plot(FingersKinInfo.Finger(3).Es_MaxPos,-50,'or')
 
 %% F3 movement analysis: Finding the max velocity during transition from flextion to extention or extension to flextion
 
 Velq_F3=interp1(time_AllTrials{1,3},fingers{1,3}(3).svel,Xq_F3);
 AbsVel_F3=sqrt(Velq_F3(:,1).^2+Velq_F3(:,2).^2+Velq_F3(:,3).^2);
 
-Index_F3=sort([1; FingersKinInfo.Finger(3).F2E_MaxPos;...
-    FingersKinInfo.Finger(3).E2F_MaxPos; F3_n]);
+Index_F3=sort([1; FingersKinInfo.Finger(3).Fs_MaxPos;...
+    FingersKinInfo.Finger(3).Es_MaxPos; F3_n]);
 
 j=1;
 for i=1:2:(length(Index_F3)-1)
     Section=AbsVel_F3(Index_F3(i):(Index_F3(i+1)));
     [m_S n_S]=max(Section);
-    FingersKinInfo.Finger(3).F2E_MaxVel(1,j)=(n_S+Index_F3(i)-1);
+    FingersKinInfo.Finger(3).Fs_MaxVel(1,j)=(n_S+Index_F3(i)-1);
     j=j+1;
 end
 
@@ -400,22 +409,22 @@ j=1;
 for i=2:2:(length(Index_F3)-1)
     Section=AbsVel_F3(Index_F3(i):(Index_F3(i+1)));
     [m_S n_S]=max(Section);
-    FingersKinInfo.Finger(3).E2F_MaxVel(1,j)=(n_S+Index_F3(i)-1);
+    FingersKinInfo.Finger(3).Es_MaxVel(1,j)=(n_S+Index_F3(i)-1);
     j=j+1;
 end
 
 % check on the plot
 figure;
 plot(AbsVel_F3)
-hold on; plot(FingersKinInfo.Finger(3).F2E_MaxVel,100,'ok')
-hold on; plot(FingersKinInfo.Finger(3).E2F_MaxVel,150,'ob')
+hold on; plot(FingersKinInfo.Finger(3).Fs_MaxVel,100,'ok')
+hold on; plot(FingersKinInfo.Finger(3).Es_MaxVel,150,'ob')
 
 figure;
 plot(Posq_F3(:,3))
-hold on; plot(FingersKinInfo.Finger(3).F2E_MaxPos,-80,'og')
-hold on; plot(FingersKinInfo.Finger(3).E2F_MaxPos,-50,'or')
-hold on; vline(FingersKinInfo.Finger(3).F2E_MaxVel,'g--')
-hold on; vline(FingersKinInfo.Finger(3).E2F_MaxVel,'r--')
+hold on; plot(FingersKinInfo.Finger(3).Fs_MaxPos,-80,'og')
+hold on; plot(FingersKinInfo.Finger(3).Es_MaxPos,-50,'or')
+hold on; vline(FingersKinInfo.Finger(3).Fs_MaxVel,'g--')
+hold on; vline(FingersKinInfo.Finger(3).Es_MaxVel,'r--')
 
 FingersKinData.Finger(3).PurePos=Posq_F3(:,3);
 FingersKinData.Finger(3).PureVel=AbsVel_F3;
@@ -438,7 +447,7 @@ for i=10*half_window:F4_n-(half_window+1)
     logic1=(Posq_F4(i-half_window:i+half_window,3)< Posq_F4(i,3));
     
     if sum(logic1)==2*half_window
-        FingersKinInfo.Finger(4).F2E_MaxPos(j,1)=i;
+        FingersKinInfo.Finger(4).Fs_MaxPos(j,1)=i;
         j=j+1;
         
     end
@@ -446,7 +455,7 @@ for i=10*half_window:F4_n-(half_window+1)
     logic2=(Posq_F4(i-half_window:i+half_window,3)> Posq_F4(i,3));
     
     if sum(logic2)==2*half_window
-        FingersKinInfo.Finger(4).E2F_MaxPos(jj,1)=i;
+        FingersKinInfo.Finger(4).Es_MaxPos(jj,1)=i;
         jj=jj+1;
     end
     
@@ -456,22 +465,22 @@ end
 % check on the plot
 figure;
 plot(Posq_F4(:,3))
-hold on; plot(FingersKinInfo.Finger(4).F2E_MaxPos,-80,'og')
-hold on; plot(FingersKinInfo.Finger(4).E2F_MaxPos,-50,'or')
+hold on; plot(FingersKinInfo.Finger(4).Fs_MaxPos,-80,'og')
+hold on; plot(FingersKinInfo.Finger(4).Es_MaxPos,-50,'or')
 
 %% F4 movement analysis: Finding the max velocity during transition from flextion to extention or extension to flextion
 
 Velq_F4=interp1(time_AllTrials{1,4},fingers{1,4}(4).svel,Xq_F4);
 AbsVel_F4=sqrt(Velq_F4(:,1).^2+Velq_F4(:,2).^2+Velq_F4(:,3).^2);
 
-Index_F4=sort([1; FingersKinInfo.Finger(4).F2E_MaxPos;...
-    FingersKinInfo.Finger(4).E2F_MaxPos; F4_n]);
+Index_F4=sort([1; FingersKinInfo.Finger(4).Fs_MaxPos;...
+    FingersKinInfo.Finger(4).Es_MaxPos; F4_n]);
 
 j=1;
 for i=1:2:(length(Index_F4)-1)
     Section=AbsVel_F4(Index_F4(i):(Index_F4(i+1)));
     [m_S n_S]=max(Section);
-    FingersKinInfo.Finger(4).F2E_MaxVel(1,j)=(n_S+Index_F4(i)-1);
+    FingersKinInfo.Finger(4).Fs_MaxVel(1,j)=(n_S+Index_F4(i)-1);
     j=j+1;
     
 end
@@ -480,7 +489,7 @@ j=1;
 for i=2:2:(length(Index_F4)-1)
     Section=AbsVel_F4(Index_F4(i):(Index_F4(i+1)));
     [m_S n_S]=max(Section);
-    FingersKinInfo.Finger(4).E2F_MaxVel(1,j)=(n_S+Index_F4(i)-1);
+    FingersKinInfo.Finger(4).Es_MaxVel(1,j)=(n_S+Index_F4(i)-1);
     j=j+1;
 end
 
@@ -488,15 +497,15 @@ end
 % check on the plot
 figure;
 plot(AbsVel_F4)
-hold on; plot(FingersKinInfo.Finger(4).F2E_MaxVel,100,'ok')
-hold on; plot(FingersKinInfo.Finger(4).E2F_MaxVel,150,'ob')
+hold on; plot(FingersKinInfo.Finger(4).Fs_MaxVel,100,'ok')
+hold on; plot(FingersKinInfo.Finger(4).Es_MaxVel,150,'ob')
 
 figure;
 plot(Posq_F4(:,3))
-hold on; plot(FingersKinInfo.Finger(4).F2E_MaxPos,-80,'og')
-hold on; plot(FingersKinInfo.Finger(4).E2F_MaxPos,-50,'or')
-hold on; vline(FingersKinInfo.Finger(4).F2E_MaxVel,'g--')
-hold on; vline(FingersKinInfo.Finger(4).E2F_MaxVel,'r--')
+hold on; plot(FingersKinInfo.Finger(4).Fs_MaxPos,-80,'og')
+hold on; plot(FingersKinInfo.Finger(4).Es_MaxPos,-50,'or')
+hold on; vline(FingersKinInfo.Finger(4).Fs_MaxVel,'g--')
+hold on; vline(FingersKinInfo.Finger(4).Es_MaxVel,'r--')
 
 FingersKinData.Finger(4).PurePos=Posq_F4(:,3);
 FingersKinData.Finger(4).PureVel=AbsVel_F4;
@@ -519,41 +528,41 @@ for i=5*half_window:F5_n-(half_window+1)
     logic1=(Posq_F5(i-half_window:i+half_window,3)< Posq_F5(i,3));
     
     if sum(logic1)==2*half_window
-        FingersKinInfo.Finger(5).F2E_MaxPos(j,1)=i;
+        FingersKinInfo.Finger(5).Fs_MaxPos(j,1)=i;
         j=j+1;
     end
     
     logic2=(Posq_F5(i-half_window:i+half_window,3)> Posq_F5(i,3));
     
     if sum(logic2)==2*half_window
-        FingersKinInfo.Finger(5).E2F_MaxPos(jj,1)=i;
+        FingersKinInfo.Finger(5).Es_MaxPos(jj,1)=i;
         jj=jj+1;
         
     end
      
 end
 
-FingersKinInfo.Finger(5).E2F_MaxPos=FingersKinInfo.Finger(5).E2F_MaxPos([1:16,18:end]);
+FingersKinInfo.Finger(5).Es_MaxPos=FingersKinInfo.Finger(5).Es_MaxPos([1:16,18:end]);
 
 % check on the plot
 figure;
 plot(Posq_F5(:,3))
-hold on; plot(FingersKinInfo.Finger(5).F2E_MaxPos,-50,'og')
-hold on; plot(FingersKinInfo.Finger(5).E2F_MaxPos,-20,'or')
+hold on; plot(FingersKinInfo.Finger(5).Fs_MaxPos,-50,'og')
+hold on; plot(FingersKinInfo.Finger(5).Es_MaxPos,-20,'or')
 
 %% F5 movement analysis: Finding the max velocity during transition from flextion to extention or extension to flextion
 
 Velq_F5=interp1(time_AllTrials{1,5},fingers{1,5}(5).svel,Xq_F5);
 AbsVel_F5=sqrt(Velq_F5(:,1).^2+Velq_F5(:,2).^2+Velq_F5(:,3).^2);
 
-Index_F5=sort([1; FingersKinInfo.Finger(5).F2E_MaxPos;...
-    FingersKinInfo.Finger(5).E2F_MaxPos; F5_n-(half_window+1)]);
+Index_F5=sort([1; FingersKinInfo.Finger(5).Fs_MaxPos;...
+    FingersKinInfo.Finger(5).Es_MaxPos; F5_n-(half_window+1)]);
 
 j=1;
 for i=1:2:(length(Index_F5)-1)
     Section=AbsVel_F5(Index_F5(i):(Index_F5(i+1)));
     [m_S n_S]=max(Section);
-    FingersKinInfo.Finger(5).F2E_MaxVel(1,j)=(n_S+Index_F5(i)-1);
+    FingersKinInfo.Finger(5).Fs_MaxVel(1,j)=(n_S+Index_F5(i)-1);
     j=j+1;
 end
 
@@ -561,22 +570,22 @@ j=1;
 for i=2:2:(length(Index_F5)-1)
     Section=AbsVel_F5(Index_F5(i):(Index_F5(i+1)));
     [m_S n_S]=max(Section);
-    FingersKinInfo.Finger(5).E2F_MaxVel(1,j)=(n_S+Index_F5(i)-1);
+    FingersKinInfo.Finger(5).Es_MaxVel(1,j)=(n_S+Index_F5(i)-1);
     j=j+1;
 end
 
 % check on the plot
 figure;
 plot(AbsVel_F5)
-hold on; plot(FingersKinInfo.Finger(5).F2E_MaxVel,100,'ok')
-hold on; plot(FingersKinInfo.Finger(5).E2F_MaxVel,150,'ob')
+hold on; plot(FingersKinInfo.Finger(5).Fs_MaxVel,100,'ok')
+hold on; plot(FingersKinInfo.Finger(5).Es_MaxVel,150,'ob')
 
 figure;
 plot(Posq_F5(:,3))
-hold on; plot(FingersKinInfo.Finger(5).F2E_MaxPos,-50,'og')
-hold on; plot(FingersKinInfo.Finger(5).E2F_MaxPos,-20,'or')
-hold on; vline(FingersKinInfo.Finger(5).F2E_MaxVel,'g--')
-hold on; vline(FingersKinInfo.Finger(5).E2F_MaxVel,'r--')
+hold on; plot(FingersKinInfo.Finger(5).Fs_MaxPos,-50,'og')
+hold on; plot(FingersKinInfo.Finger(5).Es_MaxPos,-20,'or')
+hold on; vline(FingersKinInfo.Finger(5).Fs_MaxVel,'g--')
+hold on; vline(FingersKinInfo.Finger(5).Es_MaxVel,'r--')
 
 FingersKinData.Finger(5).PurePos=Posq_F5(:,3);
 FingersKinData.Finger(5).PureVel=AbsVel_F5;
@@ -968,6 +977,10 @@ for Fi=1:5
      
 end
 
+%save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1/LFO_signals.mat','LFO_signals')
+save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1/FingersKinIndexes.mat','FingersKinIndexes')
+%save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1/HG_Direct_LFO_Signals.mat','HG_Direct_LFO_Signals')
+
 %% if HG Continued: similar analysis for the avereged subbands of highgamma 
 Fi=1;
 AllSubBands=[];
@@ -1033,6 +1046,8 @@ for Fi=1:5
         filtfilt(b,a,PureEnv)+repmat(mean(PureEnv),size(PureEnv,1),1);
     
 end
+
+%save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1/HG_Avg_LFO_Signals.mat','HG_Avg_LFO_Signals')
 
 %% Multiple Linear Regression for delta band
     
