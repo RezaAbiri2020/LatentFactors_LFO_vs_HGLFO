@@ -96,70 +96,84 @@ figure(2)
 hist(FingerPAC(1).Flexion(1).AvgHG.ValueCh(1).ZScAll,100)
 set(gca,'fontsize',16)
 
-%Calculating p-value for all channels
+%Calculating p-value for all channels within each trial
 for Fi=1:5
-    
+    % for flexions
     for flexion=1:length(FingerPAC(Fi).Flexion)
-        P_value1=length(find(FingerPAC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).ZScAll(2:end)>...
-            FingerPAC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).ZScAll(1)))...
-            /length(FingerPAC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).ZScAll);
-        
-        P_value2=length(find(FingerPAC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).ZScAll(2:end)>...
-            FingerPAC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).ZScAll(1)))...
-            /length(FingerPAC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).ZScAll);
-        
-        FingerPAC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).PValue=P_value1;
-        FingerPAC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).PValue=P_value2;
-        
+        for ch=1:256
+            P_value1=length(find(FingerPAC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).ZScAll(2:end)>...
+                FingerPAC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).ZScAll(1)))...
+                /length(FingerPAC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).ZScAll);
+            
+            P_value2=length(find(FingerPAC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).ZScAll(2:end)>...
+                FingerPAC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).ZScAll(1)))...
+                /length(FingerPAC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).ZScAll);
+            
+            FingerPAC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).PValue=P_value1;
+            FingerPAC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).PValue=P_value2;
+        end
     end
-    
+    % for extensions
     for extension=1:length(FingerPAC(Fi).Extension)
-        P_value1=length(find(FingerPAC(Fi).Extension(extension).WholeHG.ValueCh(ch).ZScAll(2:end)>...
-            FingerPAC(Fi).Extension(extension).WholeHG.ValueCh(ch).ZScAll(1)))...
-            /length(FingerPAC(Fi).Extension(extension).WholeHG.ValueCh(ch).ZScAll);
-        
-        P_value2=length(find(FingerPAC(Fi).Extension(extension).AvgHG.ValueCh(ch).ZScAll(2:end)>...
-            FingerPAC(Fi).Extension(extension).AvgHG.ValueCh(ch).ZScAll(1)))...
-            /length(FingerPAC(Fi).Extension(extension).AvgHG.ValueCh(ch).ZScAll);
-        
-        FingerPAC(Fi).Extension(extension).WholeHG.ValueCh(ch).PValue=P_value1;
-        FingerPAC(Fi).Extension(extension).AvgHG.ValueCh(ch).PValue=P_value2;
-        
+        for ch=1:256
+            P_value1=length(find(FingerPAC(Fi).Extension(extension).WholeHG.ValueCh(ch).ZScAll(2:end)>...
+                FingerPAC(Fi).Extension(extension).WholeHG.ValueCh(ch).ZScAll(1)))...
+                /length(FingerPAC(Fi).Extension(extension).WholeHG.ValueCh(ch).ZScAll);
+            
+            P_value2=length(find(FingerPAC(Fi).Extension(extension).AvgHG.ValueCh(ch).ZScAll(2:end)>...
+                FingerPAC(Fi).Extension(extension).AvgHG.ValueCh(ch).ZScAll(1)))...
+                /length(FingerPAC(Fi).Extension(extension).AvgHG.ValueCh(ch).ZScAll);
+            
+            FingerPAC(Fi).Extension(extension).WholeHG.ValueCh(ch).PValue=P_value1;
+            FingerPAC(Fi).Extension(extension).AvgHG.ValueCh(ch).PValue=P_value2;
+        end
+          
     end
     
 end
+%save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1/FingerPAC.mat','FingerPAC','-v7.3')
 
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-% stem plots of p-values for all channels per finger with hline in 0.05
-Fi=1;
-PValuesFi=[];
-for ch=1:256
-    PValuesFi=[PValuesFi; FingerPAC(Fi).ValueCh(ch).PValue];
+% stem plots of p-values for all channels per finger/flexions or extensions with hline in 0.05
+Fi=2;
+for flexion=1:length(FingerPAC(Fi).Flexion)
+    PValuesDirect=[];
+    PValuesAvg=[];
+    for ch=1:256
+        PValuesDirect=[PValuesDirect; FingerPAC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).PValue];
+        PValuesAvg=[PValuesAvg; FingerPAC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).PValue];
+    end
+%     figure(1);
+%     subplot(5,1,flexion)
+%     stem(PValuesDirect)
+%     xlim([0,256])
+%     hline(0.05,'r')
+%     set(gca,'fontsize',16)
+%     
+%     figure(2);
+%     subplot(5,1,flexion)
+%     stem(PValuesAvg)
+%     xlim([0,256])
+%     hline(0.05,'r')
+%     set(gca,'fontsize',16)
+    
 end
-stem(PValuesFi)
-hline(0.05,'r')
-set(gca,'fontsize',16)
+
 
 % showing significant channels on brain map per finger
 
-load('..\ImagingData\EC171_rh_pial.mat')
-load('..\ImagingData\TDT_elecs_all.mat')
+load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\EC171_rh_pial.mat')
+load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\TDT_elecs_all.mat')
 
 for Fi=1:5
-    PValuesFi=[];
+    flexion=1;
+    PValuesDirect=[];
     for ch=1:256
-        PValuesFi=[PValuesFi; FingerPAC(Fi).ValueCh(ch).PValue];
+        PValuesDirect=[PValuesDirect; FingerPAC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).PValue];
     end
-    PValuesFi(find(PValuesFi<0.05))=-1; %significant
-    PValuesFi(find(PValuesFi>=0.05))=0; % not significant
+    PValuesDirect(find(PValuesDirect<0.05))=-1; %significant
+    PValuesDirect(find(PValuesDirect>=0.05))=0; % not significant
     subplot(2,3,Fi)
-    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(-1*PValuesFi),'rh'); % rho is a 256ch vector
+    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(-1*PValuesDirect),'rh'); % rho is a 256ch vector
     el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
     title(['Finger',num2str(Fi)]);
     %colorbar
@@ -167,55 +181,210 @@ for Fi=1:5
     
 end
 
-save('FingerPAC.mat','FingerPAC')
-
 %% phase-phase coupling
-% how the phase of LFO is coupled to the phase of HG-LFO
+% how the phase of LFO is coupled to the phase of
+% HG-Direct-LFO & HG-Avg-LFO during flexions or extensions
 
 for Fi=1:5
-    Phase1=angle(hilbert(HG_DeltaofAvgHG(Fi).Finger));
-    Phase2=angle(hilbert(Delta_Fingers(Fi).Filtered));
+    fprintf(['Finger:',num2str(Fi),'\n'])
+    Phase=angle(hilbert(LFO_signals(Fi).Filtered));
+    Phase_Direct=angle(hilbert(HG_Direct_LFO_Signals(Fi).DeltaofEnv));
+    Phase_Avg=angle(hilbert(HG_Avg_LFO_Signals(Fi).DeltaofEnv));
     
-    for ch=1:256
-        PPC_Value=(sum(exp(1i.*(Phase1(1:end,ch)-Phase2(1:end,ch)))))/length(Phase1);
-        FingerPPC(Fi).ValueCh(ch).RealMag=abs(PPC_Value); 
-        FingerPPC(Fi).ValueCh(ch).RealAngle= angle(PPC_Value);
+    Index_Fi=sort([1; FingersKinIndexes.Finger(Fi).Fs_MaxPos;...
+        FingersKinIndexes.Finger(Fi).Es_MaxPos; length(Phase)]);
+    
+    % for flexions
+    kk=0;
+    for k=1:2:length(Index_Fi)-1
+        fprintf(['Flexion:',num2str(k),'\n'])
+        Phase_k=Phase(Index_Fi(k):Index_Fi(k+1),:);
+        Phase_Direct_k=Phase_Direct(Index_Fi(k):Index_Fi(k+1),:);
+        Phase_Avg_k=Phase_Avg(Index_Fi(k):Index_Fi(k+1),:);
+        kk=kk+1;
         
-        Phase2Ch=Phase2(1:end,ch);
-        for j=1:10000 % producing shuffled results
-            Shuffled_Phase2Ch = Phase2Ch(randperm(numel(Phase2Ch)));
-            FingerPPC(Fi).ValueCh(ch).Shuffled(j)=abs((sum(exp(1i.*(Phase1(1:end,ch)-Shuffled_Phase2Ch(1:end)))))/length(Phase1));
+        for ch=1:256
+            PPC_Value1=(sum(exp(1i.*(Phase_k(1:end,ch)-Phase_Direct_k(1:end,ch)))))/length(Phase_k);
+            PPC_Value2=(sum(exp(1i.*(Phase_k(1:end,ch)-Phase_Avg_k(1:end,ch)))))/length(Phase_k);
+            
+            FingerPPC(Fi).Flexion(kk).WholeHG.ValueCh(ch).RealComplex=PPC_Value1;
+            FingerPPC(Fi).Flexion(kk).AvgHG.ValueCh(ch).RealComplex=PPC_Value2;
+            
+            Phase1Ch=Phase_Direct_k(1:end,ch);
+            Phase2Ch=Phase_Avg_k(1:end,ch);
+            for j=1:2000 % producing shuffled results
+                Shuffled_Phase1Ch = Phase1Ch(randperm(numel(Phase1Ch)));
+                Shuffled_Phase2Ch = Phase2Ch(randperm(numel(Phase2Ch)));
+                
+                FingerPPC(Fi).Flexion(kk).WholeHG.ValueCh(ch).Shuffled(j)=(sum(exp(1i.*(Phase_k(1:end,ch)-Shuffled_Phase1Ch(1:end)))))/length(Phase_k);                
+                FingerPPC(Fi).Flexion(kk).AvgHG.ValueCh(ch).Shuffled(j)=(sum(exp(1i.*(Phase_k(1:end,ch)-Shuffled_Phase2Ch(1:end)))))/length(Phase_k);                
+                
+            end
+           
         end
+    end
+    
+    % for extensions
+    kk=0;
+    for k=2:2:length(Index_Fi)-1
+        fprintf(['Extension:',num2str(k),'\n'])
+        Phase_k=Phase(Index_Fi(k):Index_Fi(k+1),:);
+        Phase_Direct_k=Phase_Direct(Index_Fi(k):Index_Fi(k+1),:);
+        Phase_Avg_k=Phase_Avg(Index_Fi(k):Index_Fi(k+1),:);
+        kk=kk+1;
+        
+        for ch=1:256
+            PPC_Value1=(sum(exp(1i.*(Phase_k(1:end,ch)-Phase_Direct_k(1:end,ch)))))/length(Phase_k);
+            PPC_Value2=(sum(exp(1i.*(Phase_k(1:end,ch)-Phase_Avg_k(1:end,ch)))))/length(Phase_k);
+            
+            FingerPPC(Fi).Extension(kk).WholeHG.ValueCh(ch).RealComplex=PPC_Value1;
+            FingerPPC(Fi).Extension(kk).AvgHG.ValueCh(ch).RealComplex=PPC_Value2;
+            
+            Phase1Ch=Phase_Direct_k(1:end,ch);
+            Phase2Ch=Phase_Avg_k(1:end,ch);
+            for j=1:2000 % producing shuffled results
+                Shuffled_Phase1Ch = Phase1Ch(randperm(numel(Phase1Ch)));
+                Shuffled_Phase2Ch = Phase2Ch(randperm(numel(Phase2Ch)));
+                
+                FingerPPC(Fi).Extension(kk).WholeHG.ValueCh(ch).Shuffled(j)=(sum(exp(1i.*(Phase_k(1:end,ch)-Shuffled_Phase1Ch(1:end)))))/length(Phase_k);
+                FingerPPC(Fi).Extension(kk).AvgHG.ValueCh(ch).Shuffled(j)=(sum(exp(1i.*(Phase_k(1:end,ch)-Shuffled_Phase2Ch(1:end)))))/length(Phase_k);
+                
+            end
+            
+        end
+    end
+      
+end
+
+%Calculating p-value for all channels within each trial
+for Fi=1:5
+    % for flexions
+    for flexion=1:length(FingerPPC(Fi).Flexion)
+        for ch=1:256
+            P_value1=length(find(abs(FingerPPC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).RealComplex)>...
+                abs(FingerPPC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).Shuffled)))/...
+                (length(FingerPPC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).Shuffled)+1);
+            FingerPPC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).PValue=P_value1;
+            
+            P_value2=length(find(abs(FingerPPC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).RealComplex)>...
+                abs(FingerPPC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).Shuffled)))/...
+                (length(FingerPPC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).Shuffled)+1);
+            FingerPPC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).PValue=P_value2;
+            
+        end
+    end
+    % for extensions
+    for extension=1:length(FingerPPC(Fi).Extension)
+        for ch=1:256
+            P_value1=length(find(abs(FingerPPC(Fi).Extension(extension).WholeHG.ValueCh(ch).RealComplex)>...
+                abs(FingerPPC(Fi).Extension(extension).WholeHG.ValueCh(ch).Shuffled)))/...
+                (length(FingerPPC(Fi).Extension(extension).WholeHG.ValueCh(ch).Shuffled)+1);
+            FingerPPC(Fi).Extension(extension).WholeHG.ValueCh(ch).PValue=P_value1;
+            
+            P_value2=length(find(abs(FingerPPC(Fi).Extension(extension).AvgHG.ValueCh(ch).RealComplex)>...
+                abs(FingerPPC(Fi).Extension(extension).AvgHG.ValueCh(ch).Shuffled)))/...
+                (length(FingerPPC(Fi).Extension(extension).AvgHG.ValueCh(ch).Shuffled)+1);
+            FingerPPC(Fi).Extension(extension).AvgHG.ValueCh(ch).PValue=P_value2;
+            
+        end      
+    end   
+end
+
+
+%Calculating p-value for all channels across trials
+for Fi=1:5
+    % for flexion
+    for ch=1:256
+        RealValue1=[];
+        ShuffledValue1=[];
+        RealValue2=[];
+        ShuffledValue2=[];
+        for flexion=1:length(FingerPPC(Fi).Flexion)
+            RealValue1=[RealValue1; FingerPPC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).RealComplex];
+            ShuffledValue1=[ShuffledValue1; FingerPPC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).Shuffled];
+            RealValue2=[RealValue2; FingerPPC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).RealComplex];
+            ShuffledValue2=[ShuffledValue2; FingerPPC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).Shuffled];
+        end
+        Pvalue1=length(find(abs(mean(RealValue1))>abs(mean(ShuffledValue1))))/...
+            (length(FingerPPC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).Shuffled)+1);
+        FingerPPC(Fi).PValuesFlexion.WholeHG.ValueCh(ch)=Pvalue1;
+        
+        Pvalue2=length(find(abs(mean(RealValue2))>abs(mean(ShuffledValue2))))/...
+            (length(FingerPPC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).Shuffled)+1);
+        FingerPPC(Fi).PValuesFlexion.AvgHG.ValueCh(ch)=Pvalue2;
+        
+    end
+    % for extension
+    for ch=1:256
+        RealValue1=[];
+        ShuffledValue1=[];
+        RealValue2=[];
+        ShuffledValue2=[];
+        for extension=1:length(FingerPPC(Fi).Extension)
+            RealValue1=[RealValue1; FingerPPC(Fi).Extension(extension).WholeHG.ValueCh(ch).RealComplex];
+            ShuffledValue1=[ShuffledValue1; FingerPPC(Fi).Extension(extension).WholeHG.ValueCh(ch).Shuffled];
+            RealValue2=[RealValue2; FingerPPC(Fi).Extension(extension).AvgHG.ValueCh(ch).RealComplex];
+            ShuffledValue2=[ShuffledValue2; FingerPPC(Fi).Extension(extension).AvgHG.ValueCh(ch).Shuffled];
+        end
+        Pvalue1=length(find(abs(mean(RealValue1))>abs(mean(ShuffledValue1))))/...
+            (length(FingerPPC(Fi).Extension(extension).WholeHG.ValueCh(ch).Shuffled)+1);
+        FingerPPC(Fi).PValuesExtension.WholeHG.ValueCh(ch)=Pvalue1;
+        
+        Pvalue2=length(find(abs(mean(RealValue2))>abs(mean(ShuffledValue2))))/...
+            (length(FingerPPC(Fi).Extension(extension).AvgHG.ValueCh(ch).Shuffled)+1);
+        FingerPPC(Fi).PValuesExtension.AvgHG.ValueCh(ch)=Pvalue2;
         
     end
     
 end
+%save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1/FingerPPC.mat','FingerPPC','-v7.3')
 
-% plot of observations; example
-figure
-hist([FingerPPC(1).ValueCh(1).RealMag, FingerPPC(1).ValueCh(1).Shuffled],100)
-set(gca,'fontsize',16)
-
-%Calculating p-value for all channels
-for Fi=1:5
-    for ch=1:256
-        P_value=length(find(FingerPPC(Fi).ValueCh(ch).Shuffled>FingerPPC(Fi).ValueCh(ch).RealMag))...
-            /(length(FingerPPC(Fi).ValueCh(ch).Shuffled)+1);
-        
-        FingerPPC(Fi).ValueCh(ch).PValue=P_value;
-    end
-end
 
 % stem plots of p-values for all channels per finger with hline in 0.05
 Fi=1;
-PValuesFi=[];
+% for flexion
+PValuesDirect=[];
+PValuesAvg=[];
 for ch=1:256
-    PValuesFi=[PValuesFi; FingerPPC(Fi).ValueCh(ch).PValue];
+    PValuesDirect=[PValuesDirect; FingerPPC(Fi).PValuesFlexion.WholeHG.ValueCh(ch)];
+    PValuesAvg=[PValuesAvg; FingerPPC(Fi).PValuesFlexion.AvgHG.ValueCh(ch)];
 end
-stem(PValuesFi)
+figure(1);
+subplot(2,1,1)
+stem(PValuesDirect)
+xlim([0,256])
 hline(0.05,'r')
 set(gca,'fontsize',16)
+title('Flexion; HG-Direct-LFO')
+subplot(2,1,2)
+stem(PValuesAvg)
+xlim([0,256])
+hline(0.05,'r')
+set(gca,'fontsize',16)
+title('Flexion; HG-Avg-LFO')
 
+% for extension
+PValuesDirect=[];
+PValuesAvg=[];
+for ch=1:256
+    PValuesDirect=[PValuesDirect; FingerPPC(Fi).PValuesExtension.WholeHG.ValueCh(ch)];
+    PValuesAvg=[PValuesAvg; FingerPPC(Fi).PValuesExtension.AvgHG.ValueCh(ch)];
+end
+figure(2);
+subplot(2,1,1)
+stem(PValuesDirect)
+xlim([0,256])
+hline(0.05,'r')
+set(gca,'fontsize',16)
+title('Extension; HG-Direct-LFO')
+subplot(2,1,2)
+stem(PValuesAvg)
+xlim([0,256])
+hline(0.05,'r')
+set(gca,'fontsize',16)
+title('Extension; HG-Avg-LFO')
+
+%%
 % compass plots of coupled-phase per channel for all finger with 
 % significant channel with red lines
 Nch_Record=256;
