@@ -23,5 +23,5 @@ myfiguresize = [left, bottom, width, height];
 set(gcf,'PaperPosition', myfiguresize);
 
 % Save the file as PNG
-print(name,'-dpng','-r300');
+print(['E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1/',name],'-dpng','-r300');
 end
