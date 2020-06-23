@@ -249,7 +249,7 @@ for Fi=1:5
         FingersKinIndexes.Finger(Fi).Es_MaxPos; length(Phase)]);
     
     % for flexions
-    
+    kk=0;
     for k=1:2:length(Index_Fi)-1
         fprintf(['Flexion:',num2str(k),'\n'])
         Phase_k=Phase(Index_Fi(k):Index_Fi(k+1),:);
@@ -352,9 +352,8 @@ for Fi=1:5
     end
     
 end
-%save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1/FingerPPC.mat','FingerPPC','-v7.3')
+save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1/FingerPPC.mat','FingerPPC','-v7.3')
 
-%%
 % stem plots of p-values for all channels per finger with hline in 0.05
 Fi=1;
 % for flexion
@@ -378,6 +377,8 @@ hline(0.05,'r')
 set(gca,'fontsize',16)
 title('Flexion; HG-Avg-LFO')
 
+HighQualityFigs('Fs_PPC')
+
 % for extension
 PValuesDirect=[];
 PValuesAvg=[];
@@ -399,7 +400,7 @@ hline(0.05,'r')
 set(gca,'fontsize',16)
 title('Extension; HG-Avg-LFO')
 
-%%
+if 0
 % compass plots of coupled-phase per channel for all finger with 
 % significant channel with red lines
 Nch_Record=256;
@@ -436,21 +437,23 @@ for Fi=1:5
           
     end
 end
+end
 
 % showing significant channels on brain map per finger
 
 load('..\ImagingData\EC171_rh_pial.mat')
 load('..\ImagingData\TDT_elecs_all.mat')
 
+% for flexion
 for Fi=1:5
-    PValuesFi=[];
+    PValuesDirect=[];
     for ch=1:256
-        PValuesFi=[PValuesFi; FingerPPC(Fi).ValueCh(ch).PValue];
+        PValuesDirect=[PValuesDirect; FingerPPC(Fi).PValuesFlexion.WholeHG.ValueCh(ch)];
     end
-    PValuesFi(find(PValuesFi<0.05))=-1; %significant
-    PValuesFi(find(PValuesFi>=0.05))=0; % not significant
+    PValuesDirect(find(PValuesDirect<0.05))=-1; %significant
+    PValuesDirect(find(PValuesDirect>=0.05))=0; % not significant
     subplot(2,3,Fi)
-    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(-1*PValuesFi),'rh'); % rho is a 256ch vector
+    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(-1*PValuesDirect),'rh'); % rho is a 256ch vector
     el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
     title(['Finger',num2str(Fi)]);
     %colorbar
@@ -458,12 +461,54 @@ for Fi=1:5
     
 end
 
-save('FingerPPC.mat','FingerPPC')
+for Fi=1:5
+    PValuesAvg=[];
+    for ch=1:256
+        PValuesAvg=[PValuesAvg; FingerPPC(Fi).PValuesFlexion.AvgHG.ValueCh(ch)];
+    end
+    PValuesAvg(find(PValuesAvg<0.05))=-1; %significant
+    PValuesAvg(find(PValuesAvg>=0.05))=0; % not significant
+    subplot(2,3,Fi)
+    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(-1*PValuesAvg),'rh'); % rho is a 256ch vector
+    el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
+    title(['Finger',num2str(Fi)]);
+    %colorbar
+    
+    
+end
 
+% for extension
+for Fi=1:5
+    PValuesDirect=[];
+    for ch=1:256
+        PValuesDirect=[PValuesDirect; FingerPPC(Fi).PValuesExtension.WholeHG.ValueCh(ch)];
+    end
+    PValuesDirect(find(PValuesDirect<0.05))=-1; %significant
+    PValuesDirect(find(PValuesDirect>=0.05))=0; % not significant
+    subplot(2,3,Fi)
+    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(-1*PValuesDirect),'rh'); % rho is a 256ch vector
+    el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
+    title(['Finger',num2str(Fi)]);
+    %colorbar
+    
+    
+end
 
-%% connection of significant channels to Weights of vel/pos prediction
-load('HG_AllWeights.mat');
-
+for Fi=1:5
+    PValuesAvg=[];
+    for ch=1:256
+        PValuesAvg=[PValuesAvg; FingerPPC(Fi).PValuesExtension.AvgHG.ValueCh(ch)];
+    end
+    PValuesAvg(find(PValuesAvg<0.05))=-1; %significant
+    PValuesAvg(find(PValuesAvg>=0.05))=0; % not significant
+    subplot(2,3,Fi)
+    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(-1*PValuesAvg),'rh'); % rho is a 256ch vector
+    el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
+    title(['Finger',num2str(Fi)]);
+    %colorbar
+    
+    
+end
 
 
 %% rotation dynamics for high gamma in Ch 186, 187

@@ -92,7 +92,7 @@ for Fi=1:5
 end
 
 % plot of observations; example
-ch=1;
+ch=1; %for Fi=?5
 figure;
 plot(Fs_Phase(:,ch),Fs_Amp_Direct(:,ch),'o')
 figure;
@@ -144,7 +144,7 @@ end
 %save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1/FingerPAC.mat','FingerPAC','-v7.3')
 
 % stem plots of p-values for all channels per finger/flexions or extensions with hline in 0.05
-Fi=2;
+Fi=1;
 PValuesDirect=[];
 PValuesAvg=[];
 for ch=1:256
@@ -158,32 +158,24 @@ stem(PValuesDirect)
 xlim([0,256])
 hline(0.05,'r')
 set(gca,'fontsize',16)
+title('HG-Direct-LFO')
 
 subplot(2,1,2)
 stem(PValuesAvg)
 xlim([0,256])
 hline(0.05,'r')
 set(gca,'fontsize',16)
-
-
-
-SigChs=zeros(256,1);
-for ch=1:256
-    if (FlexionPValuesDirect(ch,:)<0.05)
-      SigChs(ch,1)=1;  
-    end 
-end
+title('HG-Avg-LFO')
 
 % showing significant channels on brain map per finger
 
 load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\EC171_rh_pial.mat')
 load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\TDT_elecs_all.mat')
-
+% for flexion
 for Fi=1:5
-    flexion=1;
     PValuesDirect=[];
     for ch=1:256
-        PValuesDirect=[PValuesDirect; FingerPAC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).PValue];
+        PValuesDirect=[PValuesDirect; FingerPAC(Fi).FsWholeHG.ValueCh(ch).PValue];
     end
     PValuesDirect(find(PValuesDirect<0.05))=-1; %significant
     PValuesDirect(find(PValuesDirect>=0.05))=0; % not significant
@@ -192,9 +184,56 @@ for Fi=1:5
     el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
     title(['Finger',num2str(Fi)]);
     %colorbar
-    
-    
+      
 end
+HighQualityFigs('Fs_Direct')
+
+for Fi=1:5
+    PValuesAvg=[];
+    for ch=1:256
+        PValuesAvg=[PValuesAvg; FingerPAC(Fi).FsAvgHG.ValueCh(ch).PValue];
+    end
+    PValuesAvg(find(PValuesAvg<0.05))=-1; %significant
+    PValuesAvg(find(PValuesAvg>=0.05))=0; % not significant
+    subplot(2,3,Fi)
+    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(-1*PValuesAvg),'rh'); % rho is a 256ch vector
+    el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
+    title(['Finger',num2str(Fi)]);
+    %colorbar
+      
+end
+% for extension
+for Fi=1:5
+    PValuesDirect=[];
+    for ch=1:256
+        PValuesDirect=[PValuesDirect; FingerPAC(Fi).EsWholeHG.ValueCh(ch).PValue];
+    end
+    PValuesDirect(find(PValuesDirect<0.05))=-1; %significant
+    PValuesDirect(find(PValuesDirect>=0.05))=0; % not significant
+    subplot(2,3,Fi)
+    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(-1*PValuesDirect),'rh'); % rho is a 256ch vector
+    el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
+    title(['Finger',num2str(Fi)]);
+    %colorbar
+      
+end
+HighQualityFigs('Es_Direct')
+
+for Fi=1:5
+    PValuesAvg=[];
+    for ch=1:256
+        PValuesAvg=[PValuesAvg; FingerPAC(Fi).EsAvgHG.ValueCh(ch).PValue];
+    end
+    PValuesAvg(find(PValuesAvg<0.05))=-1; %significant
+    PValuesAvg(find(PValuesAvg>=0.05))=0; % not significant
+    subplot(2,3,Fi)
+    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(-1*PValuesAvg),'rh'); % rho is a 256ch vector
+    el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
+    title(['Finger',num2str(Fi)]);
+    %colorbar
+      
+end
+
 
 %% phase-phase coupling
 % how the phase of LFO is coupled to the phase of
@@ -210,7 +249,7 @@ for Fi=1:5
         FingersKinIndexes.Finger(Fi).Es_MaxPos; length(Phase)]);
     
     % for flexions
-    
+    kk=0;
     for k=1:2:length(Index_Fi)-1
         fprintf(['Flexion:',num2str(k),'\n'])
         Phase_k=Phase(Index_Fi(k):Index_Fi(k+1),:);
@@ -267,41 +306,6 @@ for Fi=1:5
       
 end
 
-%Calculating p-value for all channels within each trial
-for Fi=1:5
-    % for flexions
-    for flexion=1:length(FingerPPC(Fi).Flexion)
-        for ch=1:256
-            P_value1=length(find(abs(FingerPPC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).RealComplex)>...
-                abs(FingerPPC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).Shuffled)))/...
-                (length(FingerPPC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).Shuffled)+1);
-            FingerPPC(Fi).Flexion(flexion).WholeHG.ValueCh(ch).PValue=P_value1;
-            
-            P_value2=length(find(abs(FingerPPC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).RealComplex)>...
-                abs(FingerPPC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).Shuffled)))/...
-                (length(FingerPPC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).Shuffled)+1);
-            FingerPPC(Fi).Flexion(flexion).AvgHG.ValueCh(ch).PValue=P_value2;
-            
-        end
-    end
-    % for extensions
-    for extension=1:length(FingerPPC(Fi).Extension)
-        for ch=1:256
-            P_value1=length(find(abs(FingerPPC(Fi).Extension(extension).WholeHG.ValueCh(ch).RealComplex)>...
-                abs(FingerPPC(Fi).Extension(extension).WholeHG.ValueCh(ch).Shuffled)))/...
-                (length(FingerPPC(Fi).Extension(extension).WholeHG.ValueCh(ch).Shuffled)+1);
-            FingerPPC(Fi).Extension(extension).WholeHG.ValueCh(ch).PValue=P_value1;
-            
-            P_value2=length(find(abs(FingerPPC(Fi).Extension(extension).AvgHG.ValueCh(ch).RealComplex)>...
-                abs(FingerPPC(Fi).Extension(extension).AvgHG.ValueCh(ch).Shuffled)))/...
-                (length(FingerPPC(Fi).Extension(extension).AvgHG.ValueCh(ch).Shuffled)+1);
-            FingerPPC(Fi).Extension(extension).AvgHG.ValueCh(ch).PValue=P_value2;
-            
-        end      
-    end   
-end
-
-
 %Calculating p-value for all channels across trials
 for Fi=1:5
     % for flexion
@@ -350,7 +354,6 @@ for Fi=1:5
 end
 %save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1/FingerPPC.mat','FingerPPC','-v7.3')
 
-
 % stem plots of p-values for all channels per finger with hline in 0.05
 Fi=1;
 % for flexion
@@ -374,6 +377,8 @@ hline(0.05,'r')
 set(gca,'fontsize',16)
 title('Flexion; HG-Avg-LFO')
 
+HighQualityFigs('Fs_PPC')
+
 % for extension
 PValuesDirect=[];
 PValuesAvg=[];
@@ -395,7 +400,7 @@ hline(0.05,'r')
 set(gca,'fontsize',16)
 title('Extension; HG-Avg-LFO')
 
-%%
+if 0
 % compass plots of coupled-phase per channel for all finger with 
 % significant channel with red lines
 Nch_Record=256;
@@ -432,21 +437,24 @@ for Fi=1:5
           
     end
 end
+end
 
 % showing significant channels on brain map per finger
 
 load('..\ImagingData\EC171_rh_pial.mat')
 load('..\ImagingData\TDT_elecs_all.mat')
 
+
+% for flexion
 for Fi=1:5
-    PValuesFi=[];
+    PValuesDirect=[];
     for ch=1:256
-        PValuesFi=[PValuesFi; FingerPPC(Fi).ValueCh(ch).PValue];
+        PValuesDirect=[PValuesDirect; FingerPPC(Fi).PValuesFlexion.WholeHG.ValueCh(ch)];
     end
-    PValuesFi(find(PValuesFi<0.05))=-1; %significant
-    PValuesFi(find(PValuesFi>=0.05))=0; % not significant
+    PValuesDirect(find(PValuesDirect<0.05))=-1; %significant
+    PValuesDirect(find(PValuesDirect>=0.05))=0; % not significant
     subplot(2,3,Fi)
-    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(-1*PValuesFi),'rh'); % rho is a 256ch vector
+    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(-1*PValuesDirect),'rh'); % rho is a 256ch vector
     el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
     title(['Finger',num2str(Fi)]);
     %colorbar
@@ -454,7 +462,23 @@ for Fi=1:5
     
 end
 
-save('FingerPPC.mat','FingerPPC')
+for Fi=1:5
+    PValuesAvg=[];
+    for ch=1:256
+        PValuesAvg=[PValuesDirect; FingerPPC(Fi).PValuesFlexion.WholeHG.ValueCh(ch)];
+    end
+    PValuesAvg(find(PValuesDirect<0.05))=-1; %significant
+    PValuesDirect(find(PValuesDirect>=0.05))=0; % not significant
+    subplot(2,3,Fi)
+    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(-1*PValuesDirect),'rh'); % rho is a 256ch vector
+    el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
+    title(['Finger',num2str(Fi)]);
+    %colorbar
+    
+    
+end
+
+
 
 
 %% connection of significant channels to Weights of vel/pos prediction
