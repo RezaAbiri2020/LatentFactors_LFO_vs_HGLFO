@@ -28,7 +28,7 @@ Feature=2;   % abs hilbert or envelope
 
 
 %% loading and breaking raw ECoG data into trials
-load('..\ECoGData\ECoG_data.mat');
+load('E:\ECoGLeapMotion\DataPatientTwo\ECoGData\ECoG_data.mat');
 
 % Final list of bad channels
 BadChs=[65 66 128 128+1 128+2 128+16 128+18 128+20 128+24 128+30 ...
@@ -55,7 +55,7 @@ trial_stop=trial_end_time*Fs;
 
 %% Finding the precentral (for Primary Motor=PM) and postcentral (somatosensory=SM) electrodes/channels
 
- load('..\ImagingData\TDT_elecs_all.mat')
+ load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\TDT_elecs_all.mat')
  
  PM_chs=[];
  SM_chs=[];
@@ -149,7 +149,7 @@ num_trials =8;
 
 for trial=1:num_trials
     % load trial data
-    filename = '../LeapMotionData/20180301/10h02m38s/EC171_20180301_10h02m38s_trial00';
+    filename = 'E:\ECoGLeapMotion\DataPatientTwo/LeapMotionData/20180301/10h02m38s/EC171_20180301_10h02m38s_trial00';
     load([filename,num2str(trial),'.mat']);
    
     % grab kinematics
@@ -587,6 +587,7 @@ FingersKinData.Finger(5).PureVel=AbsVel_F5;
 Modification=[length(Xq_F1),length(Xq_F2),length(Xq_F3),length(Xq_F4),length(Xq_F5)];
 
 for Fi=1:5
+    fprintf(['Finger:',num2str(Fi),'\n'])
     % modification to sync
     ECoGdata_Modified=lfp(1:Nch_Record,trial_start(Fi):(trial_start(Fi)+Modification(Fi)-1));
     % z score
@@ -1089,20 +1090,22 @@ for i=1:10%sum(ch)
 end
 
 
-% using xcorr function with lags for one channel 
+%% using xcorr function with lags for one channel: 
+
+% between kinematics and subbands 
 Fi=5;
 Output_DynamicsVel=Kin_Vel{1,Fi}(1:end);
 Output_DynamicsPos=Kin_Pos{1,Fi}(1:end);
 LagN=500;
 Colors={'r','b','y','m','c','g','k',[0.8500 0.3250 0.0980]};
 
-for ch=1:100%[90:94,106:110]
+for ch=90:94%[90:94,106:110]
     figure;
     set(gcf, 'Position', [300, 300, 700, 600]);
     for band=[1,3,6]
         
         Hilbert_band=abs(hilbert(HG_Finger5SubBands(band).EnvDeltaWOutMean(:,ch)));
-        [R,Lags]=xcorr(Output_DynamicsVel,Hilbert_band,LagN,'normalized');
+        [R,Lags]=xcorr(Output_DynamicsPos,Hilbert_band,LagN,'normalized');
         plot(Lags,R,'color',Colors{band},'linewidth',1.5)
         hold on
     end
@@ -1115,7 +1118,43 @@ for ch=1:100%[90:94,106:110]
     set(gca,'fontsize',14)
 end
 
-% using xcorr function with lags for whole grid
+% between LFO and subbands of HG-LFO
+ 
+Fi=5;
+LagN=400;
+Colors={'r','b','y','m','c','g','k',[0.8500 0.3250 0.0980]};
+figure;
+set(gcf, 'Position', [100, 100, 900, 900]);
+k=0;
+for ch=106:110%[90:94,106:110]
+    k=k+1;
+    subplot(3,2,k)
+    for band=[4,8]
+        
+        Hilbert_band=abs(hilbert(HG_Finger5SubBands(band).EnvDeltaWOutMean(:,ch)));
+        [R,Lags]=xcorr(Hilbert_band,LFO_signals(Fi).Hilbert(:,ch),LagN,'normalized');
+        plot(Lags,R,'color',Colors{band},'linewidth',1.5)
+        [value Index]=max(R);
+        hold on
+        vline(Index-LagN,'color',Colors{band})
+        hold on
+    end
+    %legend('band1','band2','band3','band4','band5','band6','band7','band8')
+    if k==1
+        legend('band4','peak4','band8','peak8')
+    end
+    xlabel('Lag')
+    ylabel('Rcorr')
+    xticks(-400:200:400)
+    %ylim([0.5,1])
+    title(['Finger: ',num2str(Fi),'; Ch: ',num2str(ch)])
+    set(gca,'fontsize',14)
+    
+end
+
+HighQualityFigs('Xcorr_LFO_HGLFO_Finger5_1')
+
+%% using xcorr function with lags for whole grid:
 Fi=5;
 Output_DynamicsVel=Kin_Vel{1,Fi}(1:end);
 Output_DynamicsPos=Kin_Pos{1,Fi}(1:end);
@@ -1143,7 +1182,6 @@ for band=1:8
     end
     
 end
-
 
 
 %% Map of predicted weights for channels across subbands of HG and lags

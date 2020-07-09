@@ -1,9 +1,6 @@
 
 % for this commit
-% changing the PAC; the amplitude should be only HG
-% consider a flexion and a extension as one trial for PAC
-% changing the random shuffling to circshift
-% seperating the rotational dynamics as another single analysis
+% 
 
 
 clear all
