@@ -1,3 +1,4 @@
+
 %Hall paper method
 % is it possible to predict the hg-lfo from surrounding lfos
 % is it possible to predict the lfo from surrounding hg-lfos
@@ -15,7 +16,7 @@ clc
 %Selected_SMChs; case 3
 %Selected_PMSMChs; case 4
 %Selected_HandChs; case 5
-Brain_part=5;
+Brain_part=1;
 
 
 %% loading and breaking raw ECoG data into trials
@@ -236,11 +237,16 @@ Fi=1;
 %Xa_init = LFO_signals(Fi).Hilbert;
 %Xb_init = abs(hilbert(HG_Direct_LFO_Signals(Fi).DeltaofEnv));
 
- Xa_init = LFO_signals(Fi).Filtered;
- Xb_init = HG_Direct_LFO_Signals(Fi).DeltaofEnv;
+Xa_init = LFO_signals(Fi).Filtered;
+Xb_init = HG_Direct_LFO_Signals(Fi).DeltaofEnv;
 
-Xa = Xa_init(:,Brain_Area);
-Xb = Xb_init(:,Brain_Area);
+%Xa = Xa_init(:,Brain_Area);
+%Xb = Xb_init(:,Brain_Area);
+
+% for significant Ch
+load('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V2\SigChs.mat')
+Xa = Xa_init(:,SigChs_All);
+Xb = Xb_init(:,SigChs_All);
 
 N = length(Xa);
 
@@ -303,7 +309,7 @@ set(gcf, 'Position', [100, 100, 800, 600]);
 plot(Corr2)
 xlabel('CCA Dimension')
 ylabel('Corr^2')
-title (' Hand area: CV corr of Chs between LFO & HG-LFO')
+title (' 114 Sig Chs: CV corr of Chs between LFO & HG-LFO')
 set(gca,'fontsize',14)
-HighQualityFigs('CCA_Corr2_Hand')
+HighQualityFigs('CCA_Corr2_SigChs')
 

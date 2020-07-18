@@ -73,8 +73,8 @@ end
 load('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V2\BrainAreas_Logical.mat')
 load('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V2\SigChs_Logical.mat')
 
-%Electrodes = Selected_Chs;
-Electrodes = SigChs_All;
+Electrodes = Selected_Chs;
+%Electrodes = SigChs_All;
 %Electrodes = Selected_HandChs;
 %Electrodes = Selected_PMChs;
 %Electrodes = Selected_SMChs;
@@ -212,8 +212,7 @@ Coeff_cv = PCA.Fs.LFO(Fi).Coeff;
 %ERP_Trials=ERPs.Fs(Fi).HG_Avg_LFO(:,Electrodes);
 
 % cross validation
-%Input_dynamics=PCs_Trials(:,1:2);
-Input_dynamics=[PCs_Trials(:,1),PCs_Trials(:,2)];
+Input_dynamics=PCs_Trials(:,1:2);
 Output_Dynamics=[[0;diff(PCs_Trials(:,1))], [0;diff(PCs_Trials(:,2))]];
 
 for i = 0:1:2*win-1
@@ -230,12 +229,6 @@ for i = 0:1:2*win-1
     Input_train_Pre = Output_Train_OB*pinv(A_all(:,:,i+1));
     
     if i<10
-        save('AMatrix.mat','A')
-        tspan=[0,10000];
-        icond={[0,3]};
-        figure;
-        PhasePlane(@system1,tspan,icond,'Xlim',[-5 5],'Ylim',[-5 5],...
-            'ArrowHeads',true,'ArrowSize',1);
         figure;
         subplot(2,1,1)
         plot(Input_train_OB(:,1)); hold on; plot(Input_train_Pre(:,1),'r-','linewidth',1);
@@ -313,7 +306,7 @@ set(gca,'fontsize',14)
 
 % testing all over just ERP trials
 % projection to PC
-PCs_Observed = [PCs_Trials(:,1),PCs_Trials(:,2)];
+PCs_Observed = PCs_Trials(:,1:2);
 
 % prediction of values
 Predicted = pinv(A_cv)*[0, 0; diff(PCs_Observed)]';
@@ -441,36 +434,20 @@ for i = 1:size(Trials,3)
     hold on
     plot(PCs_Predicted(:,1),'r')
     legend('Observed','Predicted')
-    Corr_Value= corr(PCs_Observed(:,1),PCs_Predicted(:,1));
-    PC1_R2(i)=Corr_Value^2;
-    title(['Trial: ',num2str(i),' PC1; Cross Validated; R2:',num2str(Corr_Value^2)])
+    Corr_Value= corrcoef(PCs_Observed(:,1),PCs_Predicted(:,1));
+    PC1_R2(i)=Corr_Value;
+    title(['Trial: ',num2str(i),' PC1; Cross Validated; R2:',num2str(Corr_Value(1,2).^2)])
     
     subplot(2,1,2)
     plot(PCs_Observed(:,2),'b')
     hold on
     plot(PCs_Predicted(:,2),'r')
     legend('Observed','Predicted')
-    Corr_Value= corr(PCs_Observed(:,2),PCs_Predicted(:,2));
-    PC2_R2(i)=Corr_Value^2;
-    title(['Trial: ',num2str(i),' PC2; Cross Validated; R2:',num2str(Corr_Value^2)])
+    Corr_Value= corrcoef(PCs_Observed(:,2),PCs_Predicted(:,2));
+    PC2_R2(i)=Corr_Value;
+    title(['Trial: ',num2str(i),' PC2; Cross Validated; R2:',num2str(Corr_Value(1,2).^2)])
     
 end
-
-%plot corrs
-figure;
-set(gcf, 'Position', [100, 100, 800, 600]);
-subplot(2,1,1)
-plot(PC1_R2)
-xlabel('Trial #')
-ylabel('Corr^2')
-title (' PC1: Cross validated')
-set(gca,'fontsize',14)
-subplot(2,1,2)
-plot(PC2_R2)
-xlabel('Trial #')
-ylabel('Corr^2')
-title (' PC2: Cross validated')
-set(gca,'fontsize',14)
 
 % testing all over just ERP trials
 % projection to PC
@@ -654,37 +631,20 @@ for i = 1:size(Trials,3)
     hold on
     plot(PCs_Predicted(:,1),'r')
     legend('Observed','Predicted')
-    Corr_Value= corr(PCs_Observed(:,1),PCs_Predicted(:,1));
-    PC1_R2(i)=Corr_Value^2;
-    title(['Trial: ',num2str(i),' PC1; Cross Validated; R2:',num2str(Corr_Value^2)])
+    Corr_Value= corrcoef(PCs_Observed(:,1),PCs_Predicted(:,1));
+    PC1_R2(i)=Corr_Value;
+    title(['Trial: ',num2str(i),' PC1; Cross Validated; R2:',num2str(Corr_Value(1,2).^2)])
     
     subplot(2,1,2)
     plot(PCs_Observed(:,2),'b')
     hold on
     plot(PCs_Predicted(:,2),'r')
     legend('Observed','Predicted')
-    Corr_Value= corr(PCs_Observed(:,2),PCs_Predicted(:,2));
-    PC2_R2(i)=Corr_Value^2;
-    title(['Trial: ',num2str(i),' PC2; Cross Validated; R2:',num2str(Corr_Value^2)])
+    Corr_Value= corrcoef(PCs_Observed(:,2),PCs_Predicted(:,2));
+    PC2_R2(i)=Corr_Value;
+    title(['Trial: ',num2str(i),' PC2; Cross Validated; R2:',num2str(Corr_Value(1,2).^2)])
     
 end
-
-%plot corrs
-figure;
-set(gcf, 'Position', [100, 100, 800, 600]);
-subplot(2,1,1)
-plot(PC1_R2)
-xlabel('Trial #')
-ylabel('Corr^2')
-title (' PC1: Cross validated')
-set(gca,'fontsize',14)
-subplot(2,1,2)
-plot(PC2_R2)
-xlabel('Trial #')
-ylabel('Corr^2')
-title (' PC2: Cross validated')
-set(gca,'fontsize',14)
-
 
 % testing all over just ERP trials
 % projection to PC

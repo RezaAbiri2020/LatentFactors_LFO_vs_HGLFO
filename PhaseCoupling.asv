@@ -123,12 +123,12 @@ for Fi=1:5
     for ch=1:256
         PValuesDirect=[PValuesDirect; FingerPAC(Fi).PValues.WholeHG.ValueCh(ch)];
     end
-    SigChs_Fingers=find(PValuesDirect<0.05); %significant
+    SigChs=find(PValuesDirect<0.05); %significant
     % PValuesDirect(find(PValuesDirect>=0.05))=0; % not significant
     subplot(2,3,Fi)
     ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(0*PValuesDirect),'rh'); % rho is a 256ch vector
     el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
-    el_add(elecmatrix(SigChs_Fingers+65,:),'msize',5,'color','r');
+    el_add(elecmatrix(SigChs+65,:),'msize',5,'color','r');
     title(['Finger',num2str(Fi)]);
     %colorbar     
 end
@@ -140,12 +140,12 @@ for Fi=1:5
     for ch=1:256
         PValuesAvg=[PValuesAvg; FingerPAC(Fi).PValues.AvgHG.ValueCh(ch)];
     end
-    SigChs_Fingers=find(PValuesAvg<0.05); %significant
+    SigChs=find(PValuesAvg<0.05); %significant
     % PValuesDirect(find(PValuesDirect>=0.05))=0; % not significant
     subplot(2,3,Fi)
     ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(0*PValuesAvg),'rh'); % rho is a 256ch vector
     el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
-    el_add(elecmatrix(SigChs_Fingers+65,:),'msize',5,'color','r');
+    el_add(elecmatrix(SigChs+65,:),'msize',5,'color','r');
     title(['Finger',num2str(Fi)]);
     %colorbar     
 end
@@ -254,12 +254,12 @@ for Fi=1:5
     for ch=1:256
         PValuesDirect=[PValuesDirect; FingerPAC(Fi).PValues.WholeHG.ValueCh(ch)];
     end
-    SigChs_Fingers=find(PValuesDirect<0.05); %significant
+    SigChs=find(PValuesDirect<0.05); %significant
     % PValuesDirect(find(PValuesDirect>=0.05))=0; % not significant
     subplot(2,3,Fi)
     ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(0*PValuesDirect),'rh'); % rho is a 256ch vector
     el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
-    el_add(elecmatrix(SigChs_Fingers+65,:),'msize',5,'color','r');
+    el_add(elecmatrix(SigChs+65,:),'msize',5,'color','r');
     title(['Finger',num2str(Fi)]);
     %colorbar     
 end
@@ -271,12 +271,12 @@ for Fi=1:5
     for ch=1:256
         PValuesAvg=[PValuesAvg; FingerPAC(Fi).PValues.AvgHG.ValueCh(ch)];
     end
-    SigChs_Fingers=find(PValuesAvg<0.05); %significant
+    SigChs=find(PValuesAvg<0.05); %significant
     % PValuesDirect(find(PValuesDirect>=0.05))=0; % not significant
     subplot(2,3,Fi)
     ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(0*PValuesAvg),'rh'); % rho is a 256ch vector
     el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
-    el_add(elecmatrix(SigChs_Fingers+65,:),'msize',5,'color','r');
+    el_add(elecmatrix(SigChs+65,:),'msize',5,'color','r');
     title(['Finger',num2str(Fi)]);
     %colorbar     
 end
@@ -401,12 +401,12 @@ for Fi=1:5
     for ch=1:256
         PValuesDirect=[PValuesDirect; FingerPAC(Fi).PValuesFE.WholeHG.ValueCh(ch)];
     end
-    SigChs_Fingers=find(PValuesDirect<0.05); %significant
+    SigChs=find(PValuesDirect<0.05); %significant
     % PValuesDirect(find(PValuesDirect>=0.05))=0; % not significant
     subplot(2,3,Fi)
     ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(0*PValuesDirect),'rh'); % rho is a 256ch vector
     el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
-    el_add(elecmatrix(SigChs_Fingers+65,:),'msize',5,'color','r');
+    el_add(elecmatrix(SigChs+65,:),'msize',5,'color','r');
     title(['Finger',num2str(Fi)]);
     %colorbar     
 end
@@ -418,12 +418,12 @@ for Fi=1:5
     for ch=1:256
         PValuesAvg=[PValuesAvg; FingerPAC(Fi).PValuesFE.AvgHG.ValueCh(ch)];
     end
-    SigChs_Fingers=find(PValuesAvg<0.05); %significant
+    SigChs=find(PValuesAvg<0.05); %significant
     % PValuesDirect(find(PValuesDirect>=0.05))=0; % not significant
     subplot(2,3,Fi)
     ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(0*PValuesAvg),'rh'); % rho is a 256ch vector
     el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
-    el_add(elecmatrix(SigChs_Fingers+65,:),'msize',5,'color','r');
+    el_add(elecmatrix(SigChs+65,:),'msize',5,'color','r');
     title(['Finger',num2str(Fi)]);
     %colorbar     
 end
@@ -578,12 +578,12 @@ for Fi=1
     for ch=1:256
         PValuesDirect=[PValuesDirect; FingerPAC(Fi).PValuesFE.WholeHG.ValueCh(ch)];
     end
-    SigChs_Fingers=find(PValuesDirect<0.05); %significant
+    SigChs=find(PValuesDirect<0.05); %significant
     % PValuesDirect(find(PValuesDirect>=0.05))=0; % not significant
     figure;
     ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(0*PValuesDirect),'rh'); % rho is a 256ch vector
     el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
-    el_add(elecmatrix(SigChs_Fingers+65,:),'msize',5,'color','r');
+    el_add(elecmatrix(SigChs+65,:),'msize',5,'color','r');
     title(['Finger',num2str(Fi)]);
     %colorbar     
 end
@@ -594,12 +594,12 @@ for Fi=1
     for ch=1:256
         PValuesAvg=[PValuesAvg; FingerPAC(Fi).PValuesFE.AvgHG.ValueCh(ch)];
     end
-    SigChs_Fingers=find(PValuesAvg<0.05); %significant
+    SigChs=find(PValuesAvg<0.05); %significant
     %PValuesAvg(find(PValuesAvg>=0.05))=0; % not significant
     figure;
     ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(0*PValuesAvg),'rh'); % rho is a 256ch vector
     el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
-    el_add(elecmatrix(SigChs_Fingers+65,:),'msize',5,'color','r');
+    el_add(elecmatrix(SigChs+65,:),'msize',5,'color','r');
     title(['Finger',num2str(Fi)]);
     %colorbar  
 end
@@ -618,11 +618,11 @@ BadChs = [65 66 128 128+1 128+2 128+16 128+18 128+20 128+24 128+30 ...
 
 % make channels Ready for median or mean
 All_Index = ones(size(lfp,1),1);
-All_Index(BadChs') = 0;
+All_Index(BadChs')=0;
 
 % only 256 Channels were used for real recording
-Nch_Record = 256;
-Selected_Chs = logical(All_Index(1:Nch_Record,1));
+Nch_Record=256;
+Selected_Chs=logical(All_Index(1:Nch_Record,1));
 
 % time markers in ecog
 [Nch,N] = size(lfp);
@@ -632,8 +632,8 @@ anin = anin(1,1:N);
 % from Daniel function: start and end of movements
 [trial_start_time,trial_end_time] = get_trial_times(anin,Fs);
 
-trial_start = trial_start_time*Fs;
-trial_stop = trial_end_time*Fs;
+trial_start=trial_start_time*Fs;
+trial_stop=trial_end_time*Fs;
 
 % Finding the precentral (for Primary Motor=PM) and postcentral (somatosensory=SM) electrodes/channels
  load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\TDT_elecs_all.mat')
@@ -707,10 +707,6 @@ end
  % logic Hand channels
 Selected_HandChs=logical(All_Index_Hand);
 
-
-%save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V2/BrainAreas_Logical.mat','Selected_Chs','Selected_PMChs','Selected_SMChs','Selected_PMSMChs','Selected_HandChs')
-
-
 %% 2-2: start of analysis for sig channels
 % load the correct data
 load('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V2\FingerPAC_PA_WholeMove.mat')
@@ -755,31 +751,31 @@ HighQualityFigs('WholeMovement_PAC_PA')
 
 %% 2-3: sig channels and bad channels and brain area channels 
 % for direct HG
-SigChs_Fingers=logical(zeros(256,5));
+SigChs=logical(zeros(256,5));
 for Fi=1:5
     PValuesDirect=[];
     for ch=1:256
         PValuesDirect=[PValuesDirect; FingerPAC(Fi).PValues.WholeHG.ValueCh(ch)];
     end
-    SigChs_Fingers(find(PValuesDirect<=0.05),Fi)=1; %significant    
+    SigChs(find(PValuesDirect<=0.05),Fi)=1; %significant    
 end
 
 % giting rid of bad channels
-SigChs_Fingers_Cleaned=logical(zeros(256,5));
+SigChs_Cleared=logical(zeros(256,5));
 for Fi=1:5
-    SigChNum1=sum(SigChs_Fingers(:,Fi)); %significant  
-    SigChNum2=sum(Selected_Chs.*SigChs_Fingers(:,Fi));
-    SigChs_Fingers_Cleaned(:,Fi)=Selected_Chs.*SigChs_Fingers(:,Fi);
+    SigChNum1=sum(SigChs(:,Fi)); %significant  
+    SigChNum2=sum(Selected_Chs.*SigChs(:,Fi));
+    SigChs_Cleared(:,Fi)=Selected_Chs.*SigChs(:,Fi);
 end
 
 % common significant channels across fingers
 SigChs_Common=logical(zeros(256,1));
-SigChs_Common=SigChs_Fingers_Cleaned(:,1).*SigChs_Fingers_Cleaned(:,2).*SigChs_Fingers_Cleaned(:,3).*...
-    SigChs_Fingers_Cleaned(:,4).*SigChs_Fingers_Cleaned(:,5);
+SigChs_Common=SigChs_Cleared(:,1).*SigChs_Cleared(:,2).*SigChs_Cleared(:,3).*...
+    SigChs_Cleared(:,4).*SigChs_Cleared(:,5);
 
 % all significant channels across fingers
 SigChs_All=logical(zeros(256,1));
-SigChs_All=logical(sum(SigChs_Fingers_Cleaned,2));
+SigChs_All=logical(sum(SigChs_Cleared,2));
 
 % showing significant channels on brain map per finger and all finger
 % toghether
@@ -792,7 +788,7 @@ for Fi=1:6
         subplot(2,3,Fi)
         ctmr_gauss_plot(cortex,elecmatrix(65:320,:),zeros(256,1),'rh'); % rho is a 256ch vector
         el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
-        el_add(elecmatrix(find(SigChs_Fingers_Cleaned(:,Fi)==1)+65,:),'msize',5,'color','r');
+        el_add(elecmatrix(find(SigChs_Cleared(:,Fi)==1)+65,:),'msize',5,'color','r');
         title(['Finger',num2str(Fi)]);
     elseif Fi==6
         subplot(2,3,Fi)
@@ -819,4 +815,4 @@ SigChs_Hand = SigChs_All.*Selected_HandChs;
 sum(Selected_HandChs)
 sum(SigChs_Hand)
 
-%save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V2/SigChs_Logical.mat','SigChs_Fingers_Cleaned','SigChs_All','SigChs_PM','SigChs_SM','SigChs_Hand')
+save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V2/SigChs.mat','SigChs_All','SigChs_PM','SigChs_SM','SigChs_Hand')
