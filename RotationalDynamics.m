@@ -1,9 +1,10 @@
 
-% for this commit
+
 % analysis for HG-Direct-LFO
 % analysis for HG-Avg-LFO
 % adding brain-area based analysis
 % adding analysis using sig channels
+% cross validation of A matrix for LFO and HG
 
 clear all
 close all
@@ -73,8 +74,8 @@ end
 load('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V2\BrainAreas_Logical.mat')
 load('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V2\SigChs_Logical.mat')
 
-%Electrodes = Selected_Chs;
-Electrodes = SigChs_All;
+Electrodes = Selected_Chs;
+%Electrodes = SigChs_All;
 %Electrodes = Selected_HandChs;
 %Electrodes = Selected_PMChs;
 %Electrodes = Selected_SMChs;
@@ -194,22 +195,28 @@ for Fi=1:5
 end
 
 % plot the PC weights on grid
+close all
 %% 4-1: Nik method: rotational dynamics for the first 2PC with cross validation and plots 
 
 % Give the data for cross validating the PCs using A matrix
 % input data from single trials:
 Fi = 5;
 % choose an input: flexion or extention
+% 
 Trials = Single_Trials(Fi).Fs(Fi).LFO;
 ERP_Trials = ERPs.Fs(Fi).LFO(:,Electrodes);
 PCs_Trials = PCA.Fs.LFO(Fi).Score;
 Coeff_cv = PCA.Fs.LFO(Fi).Coeff;
 
-%Trials = Single_Trials(Fi).Fs(Fi).HG_Direct_LFO;
-%ERP_Trials=ERPs.Fs(Fi).HG_Direct_LFO(:,Electrodes);
+% Trials = Single_Trials(Fi).Fs(Fi).HG_Direct_LFO;
+% ERP_Trials=ERPs.Fs(Fi).HG_Direct_LFO(:,Electrodes);
+% PCs_Trials = PCA.Fs.HG_Direct_LFO(Fi).Score;
+% Coeff_cv = PCA.Fs.HG_Direct_LFO(Fi).Coeff;
 
-%Trials = Single_Trials(Fi).Fs(Fi).HG_Avg_LFO;
-%ERP_Trials=ERPs.Fs(Fi).HG_Avg_LFO(:,Electrodes);
+% Trials = Single_Trials(Fi).Fs(Fi).HG_Avg_LFO;
+% ERP_Trials=ERPs.Fs(Fi).HG_Avg_LFO(:,Electrodes);
+% PCs_Trials = PCA.Fs.HG_Avg_LFO(Fi).Score;
+% Coeff_cv = PCA.Fs.HG_Avg_LFO(Fi).Coeff;
 
 % cross validation
 %Input_dynamics=PCs_Trials(:,1:2);
@@ -226,8 +233,8 @@ for i = 0:1:2*win-1
     A=pinv(Input_train_OB'*Input_train_OB)*(Input_train_OB'*Output_Train_OB);
     A_all(:,:,i+1) = A;
     
-    Output_train_Pre=Input_train_OB*A_all(:,:,i+1);
-    Input_train_Pre = Output_Train_OB*pinv(A_all(:,:,i+1));
+    Output_train_Pre=Input_train_OB*A;
+    Input_train_Pre = Output_Train_OB*pinv(A);
     
     if i<10
         save('AMatrix.mat','A')
@@ -249,8 +256,15 @@ for i = 0:1:2*win-1
     
 end
 
+close all
 % mean of A matrices and coeffs and observing roatinal dynamics
 A_cv = squeeze(mean(A_all,3));
+%save('A_LFO_AllChs.mat','A_cv')
+%save('A_LFO_SigChs.mat','A_cv')
+%save('A_HGDirectLFO_AllChs.mat','A_cv')
+%save('A_HGDirectLFO_SigChs.mat','A_cv')
+%save('A_HGAvgLFO_AllChs.mat','A_cv')
+%save('A_HGAvgLFO_SigChs.mat','A_cv')
 
 % solving for cross validated phase plane
 A = A_cv;
@@ -269,9 +283,8 @@ for i = 1:size(Trials,3)
     PCs_Observed = Trial(:,Electrodes)*Coeff_cv(:,1:2);
     
     % prediction of values
-    Predicted = pinv(A_cv)*[0, 0; diff(PCs_Observed)]';
-    PCs_Predicted = Predicted';
-    
+    PCs_Predicted = [0, 0; diff(PCs_Observed)]*pinv(A_cv);
+     
     % plotting the final train and test data for all trials
     figure;
     set(gcf, 'Position', [100, 100, 800, 600]);
@@ -295,6 +308,7 @@ for i = 1:size(Trials,3)
     
 end
 
+close all
 %plot corrs
 figure;
 set(gcf, 'Position', [100, 100, 800, 600]);
@@ -316,8 +330,7 @@ set(gca,'fontsize',14)
 PCs_Observed = [PCs_Trials(:,1),PCs_Trials(:,2)];
 
 % prediction of values
-Predicted = pinv(A_cv)*[0, 0; diff(PCs_Observed)]';
-PCs_Predicted = Predicted';
+PCs_Predicted = [0,0;diff(PCs_Observed)]*pinv(A_cv);
 
 % plotting the final train and test data for all trials
 figure;
@@ -327,16 +340,33 @@ plot(PCs_Observed(:,1),'b')
 hold on
 plot(PCs_Predicted(:,1),'r')
 legend('Observed','Predicted')
-Corr_Value= corrcoef(PCs_Observed(:,1),PCs_Predicted(:,1));
-title(['ERP-Trials; PC1; Cross Validated; R2:',num2str(Corr_Value(1,2).^2)])
+Corr_Value= corr(PCs_Observed(:,1),PCs_Predicted(:,1));
+title(['ERP-Trials; PC1; Cross Validated; R2:',num2str(Corr_Value^2)])
 
 subplot(2,1,2)
 plot(PCs_Observed(:,2),'b')
 hold on
 plot(PCs_Predicted(:,2),'r')
 legend('Observed','Predicted')
-Corr_Value= corrcoef(PCs_Observed(:,2),PCs_Predicted(:,2));
-title(['ERP-Trials; PC2; Cross Validated; R2:',num2str(Corr_Value(1,2).^2)])
+Corr_Value= corr(PCs_Observed(:,2),PCs_Predicted(:,2));
+title(['ERP-Trials; PC2; Cross Validated; R2:',num2str(Corr_Value^2)])
+
+% an example of plot in phase plane
+A = A_cv;
+save('AMatrix.mat','A')
+%tspan=[0 (1:2*win-1)/508.8];
+tspan=[0, 500];
+icond={[PCs_Predicted(2,1),PCs_Predicted(2,2)]};
+figure;
+PhasePlane(@system1,tspan,icond,'Xlim',[-2 2],'Ylim',[-2 2],...
+    'ArrowHeads',true,'ArrowSize',1);
+hold on;
+Traj_PC1=PCs_Predicted(2:400,2);
+Traj_PC2=PCs_Predicted(2:400,1);
+u=[0;diff(Traj_PC1)];
+v=[0;diff(Traj_PC2)];
+quiver(Traj_PC1(1:10:end),Traj_PC2(1:10:end),u(1:10:end),v(1:10:end),'MaxHeadSize',1,...
+    'LineWidth',1.5,'AutoScale','on','color','m')
 
 %% 4-2: my method1: rotational dynamics for the first 2PC with cross validation and plots 
 
@@ -713,4 +743,140 @@ legend('Observed','Predicted')
 Corr_Value= corrcoef(PCs_Observed(:,2),PCs_Predicted(:,2));
 title(['ERP-Trials; PC2; Cross Validated; R2:',num2str(Corr_Value(1,2).^2)])
 
+%% checking sequence peacking using ERP real and predicted ERP within a band LFO or HG
+
+% ERP real --->  PCs_Observed ---> PCs_Predicted ---> predicted ERP? 
+
+% PCs_Predicted = (predicted ERP) * Coeff_cv ---> predicted ERP?
+
+% 500*1 = (500* 241) * (241*1)
+
+% for having inverse and better accuracy: 500*2 = (500* 241) * (241*2) 
+% projection to PC
+PCs_Observed = [PCs_Trials(:,1),PCs_Trials(:,2)];
+% prediction of values
+PCs_Predicted = [0,0;diff(PCs_Observed)]*pinv(A_cv);
+
+Coeff_ERP = Coeff_cv(:,1:2);
+ERP_Predicted = PCs_Predicted*pinv(Coeff_ERP);
+ERP_Observed = ERP_Trials;
+
+% plot and compare the sequence peacking between the two ERP
+data1=ERP_Predicted;
+data2=zeros(size(data1));
+for i=1:size(ERP_Observed,2)
+    data2(:,i)=normalize(data1(:,i),'range');
+end
+data3=data2';
+Rows=[];
+for i=1:2*win
+    [m,n]=max(data3(:,i));
+    if isempty(find(Rows==n))
+        Rows=[Rows;n];
+    end
+    
+end
+%save('Rows_LFO_AllChs_Pre.mat','Rows')
+OrderedData=data3(Rows,:);
+figure;
+set(gcf, 'Position', [300, 100, 700,850]);
+suptitle(['LFO ERP-Pre Ordered by OB; Finger: ',num2str(Fi)]);
+imagesc(OrderedData)
+colorbar
+yticks('')
+yticks(1:3:length(Rows))
+ytickangle(0)
+yticklabels(num2str(Rows(1:3:end)))
+
+
+% look at the single trials for any patterns
+load('Rows_LFO_AllChs_OB.mat')
+
+for i = 1:size(Trials,3)
+    Trial = squeeze(Trials(:,:,i));
+    data2 = Trial(:,Electrodes);
+    data3 = data2';
+    OrderedData=data3(Rows,:);
+    figure;
+    set(gcf, 'Position', [300, 100, 700,850]);
+    suptitle(['LFO SingleTrial Ordered by OB; Finger: ',num2str(Fi)]);
+    imagesc(OrderedData)
+    colorbar
+    yticks('')
+    yticks(1:3:length(Rows))
+    ytickangle(0)
+    yticklabels(num2str(Rows(1:3:end))) 
+    
+end
+
+%% checking sequence peacking using ERP real and predicted ERP across bands of LFO and HG
+
+% ERP real --->  PCs_Observed ---> PCs_Predicted ---> predicted ERP? 
+
+% PCs_Predicted = (predicted ERP) * Coeff_cv ---> predicted ERP?
+
+% 500*1 = (500* 241) * (241*1)
+
+% for having inverse and better accuracy: 500*2 = (500* 241) * (241*2) 
+% projection to PC
+PCs_Observed = [PCs_Trials(:,1),PCs_Trials(:,2)];
+% prediction of values
+load('A_HGDirectLFO_AllChs.mat')
+PCs_Predicted = [0,0;diff(PCs_Observed)]*pinv(A_cv);
+
+Coeff_ERP = Coeff_cv(:,1:2);
+ERP_Predicted = PCs_Predicted*pinv(Coeff_ERP);
+ERP_Observed = ERP_Trials;
+
+% plot and compare the sequence peacking between the two ERP
+data1=ERP_Predicted;
+data2=zeros(size(data1));
+for i=1:size(ERP_Observed,2)
+    data2(:,i)=normalize(data1(:,i),'range');
+end
+data3=data2';
+Rows=[];
+for i=1:2*win
+    [m,n]=max(data3(:,i));
+    if isempty(find(Rows==n))
+        Rows=[Rows;n];
+    end
+    
+end
+OrderedData=data3(Rows,:);
+%save('Rows_LFO_AllChs_PreByHG.mat','Rows')
+figure;
+set(gcf, 'Position', [300, 100, 700,850]);
+suptitle(['Ordered Ch; LFO ERP-Pre by HG-LFO; Finger: ',num2str(Fi)]);
+imagesc(OrderedData)
+colorbar
+yticks('')
+yticks(1:1:length(Rows))
+ytickangle(0)
+yticklabels(num2str(Rows(1:1:end)))
+
+
+% order the prediction of LFO by the order of prediction using HG-LFO
+PCs_Observed = [PCs_Trials(:,1),PCs_Trials(:,2)];
+% prediction of values
+load('A_LFO_AllChs.mat')
+PCs_Predicted = [0,0;diff(PCs_Observed)]*pinv(A_cv);
+
+Coeff_ERP = Coeff_cv(:,1:2);
+ERP_Predicted = PCs_Predicted*pinv(Coeff_ERP);
+ERP_Observed = ERP_Trials;
+
+data3=ERP_Predicted';
+load('Rows_LFO_AllChs_PreByHG.mat')
+OrderedData=data3(Rows,:);
+%save('Rows_LFO_AllChs_PreByHG.mat','Rows')
+figure;
+set(gcf, 'Position', [300, 100, 700,850]);
+suptitle(['LFO ERP-Pre Ordered by (ERP-Pre by HG-LFO); Finger: ',num2str(Fi)]);
+imagesc(OrderedData)
+colorbar
+yticks('')
+yticks(1:1:length(Rows))
+ytickangle(0)
+yticklabels(num2str(Rows(1:1:end)))
 

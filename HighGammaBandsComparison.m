@@ -14,7 +14,7 @@ clc;
 
 %% General parameters that should be specified at the begining
 
-% choosing brain area to do analysis on that part and do referencing
+% choosing brain area or significant channels to do analysis on that part and do referencing
 % options:
 %Selected_Chs;  case 1 all electrodes
 %Selected_PMChs; case 2 
@@ -28,7 +28,7 @@ Reference=1; % for median
 %Reference=2; % for mean 
 
 % which band to do analysis: 6 bands
-FilterBand=6;
+FilterBand=1;
 
 % which feature to do analysis
 %Feature=1; % pure filtered bands
@@ -978,7 +978,7 @@ for Fi=1:5
 end
 
 %save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1/LFO_signals.mat','LFO_signals')
-save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1/FingersKinIndexes.mat','FingersKinIndexes')
+%save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1/FingersKinIndexes.mat','FingersKinIndexes')
 %save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1/HG_Direct_LFO_Signals.mat','HG_Direct_LFO_Signals')
 
 %% if HG Continued: similar analysis for the avereged subbands of highgamma 
@@ -1049,6 +1049,17 @@ end
 
 %save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1/HG_Avg_LFO_Signals.mat','HG_Avg_LFO_Signals')
 
+%% Choose the electrodes/section to do the MLR analysis
+load('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V2\SigChs_Logical.mat')
+
+%Electrodes = Selected_Chs;
+Electrodes = SigChs_All;
+%Electrodes = Selected_HandChs;
+%Electrodes = Selected_PMChs;
+%Electrodes = Selected_SMChs;
+%Electrodes = Selected_PMSMChs;
+
+
 %% Multiple Linear Regression for delta band
     
 Kin_Pos={Posq_F1(:,1) Posq_F2(:,3) Posq_F3(:,3) Posq_F4(:,3) Posq_F5(:,3)};
@@ -1057,22 +1068,46 @@ Kin_Vel={AbsVel_F1 AbsVel_F2 AbsVel_F3 AbsVel_F4 AbsVel_F5};
 % for delta band
 % Input_dynamics=Delta_Fingers(Fi).Hilbert=F_Hilbert
 % show the plots?
-Figures=1;
+figure(1);
+set(gcf, 'Position', [100, 100, 800, 600]);
+
+for LagN =0:4
+Figures=0;
 
 % prediction the velocities and positions and cacculating the R2
 R2FingersVel=[];
 R2FingersPos=[];
 for Fi=1:5
-    Input_dynamics=Delta_Fingers(Fi).Hilbert;
+    Input_dynamics=Delta_Fingers(Fi).Hilbert(:,Electrodes);
     Output_DynamicsVel=Kin_Vel{1,Fi}(1:end);
     Output_DynamicsPos=Kin_Pos{1,Fi}(1:end);
-    R2Vel=MultipleRegFunc(Fi,Input_dynamics,Output_DynamicsVel,Figures);
+    R2Vel=MultipleRegFuncLag(Fi,Input_dynamics,Output_DynamicsVel,LagN,Figures);
     R2FingersVel=[R2FingersVel,R2Vel];
-    R2Pos=MultipleRegFunc(Fi,Input_dynamics,Output_DynamicsPos,Figures);
+    R2Pos=MultipleRegFuncLag(Fi,Input_dynamics,Output_DynamicsPos,LagN,Figures);
     R2FingersPos=[R2FingersPos,R2Pos];
 end
 Delta_FingersR2Vel=R2FingersVel;
 Delta_FingersR2Pos=R2FingersPos;
+subplot(1,2,1)
+plot(Delta_FingersR2Vel)
+xlabel('Finger')
+ylabel('Corr^2')
+title (' Vel predition using Sig Chs ')
+hold on
+subplot(1,2,2)
+plot(Delta_FingersR2Pos)
+xlabel('Finger')
+ylabel('Corr^2')
+title (' Pos predition using Sig Chs ')
+hold on
+end
+subplot(1,2,1)
+legend('Lag0','Lag1','Lag2','Lag3','Lag4')
+subplot(1,2,2)
+legend('Lag0','Lag1','Lag2','Lag3','Lag4')
+ylim([0.3,0.55])
+
+HighQualityFigs('RML_LFO_SigChs')
 
 %% save R2s for delta
 
@@ -1355,19 +1390,46 @@ end
 HG_FingersWholeBandR2Vel.PureEnv=R2FingersVel;
 HG_FingersWholeBandR2Pos.PureEnv=R2FingersPos;
 
-R2FingersVel=[];
-R2FingersPos=[];
-for Fi=1:5
-    Input_dynamics=abs(hilbert(HG_FingersWholeBand(Fi).EnvDeltaWOutMean));
-    Output_DynamicsVel=Kin_Vel{1,Fi}(1:end);
-    Output_DynamicsPos=Kin_Pos{1,Fi}(1:end);
-    R2Vel=MultipleRegFunc(Fi,Input_dynamics,Output_DynamicsVel,Figures);
-    R2FingersVel=[R2FingersVel,R2Vel];
-    R2Pos=MultipleRegFunc(Fi,Input_dynamics,Output_DynamicsPos,Figures);
-    R2FingersPos=[R2FingersPos,R2Pos];
+figure(1);
+set(gcf, 'Position', [100, 100, 800, 600]);
+for LagN =0:4
+    Figures=0;
+    R2FingersVel=[];
+    R2FingersPos=[];
+    for Fi=1:5
+        Input_dynamics0=abs(hilbert(HG_FingersWholeBand(Fi).EnvDeltaWOutMean));
+        Input_dynamics = Input_dynamics0(:,Electrodes);
+        Output_DynamicsVel=Kin_Vel{1,Fi}(1:end);
+        Output_DynamicsPos=Kin_Pos{1,Fi}(1:end);
+        R2Vel=MultipleRegFuncLag(Fi,Input_dynamics,Output_DynamicsVel,LagN,Figures);
+        R2FingersVel=[R2FingersVel,R2Vel];
+        R2Pos=MultipleRegFuncLag(Fi,Input_dynamics,Output_DynamicsPos,LagN,Figures);
+        R2FingersPos=[R2FingersPos,R2Pos];
+    end
+    HG_FingersWholeBandR2Vel.EnvDeltaWOutMean=R2FingersVel;
+    HG_FingersWholeBandR2Pos.EnvDeltaWOutMean=R2FingersPos;
+subplot(1,2,1)
+plot(R2FingersVel)
+xlabel('Finger')
+ylabel('Corr^2')
+ylim([0.3,0.7])
+title (' Vel predition using Sig Chs ')
+hold on
+subplot(1,2,2)
+plot(R2FingersPos)
+xlabel('Finger')
+ylabel('Corr^2')
+ylim([0.3,0.7])
+title (' Pos predition using Sig Chs ')
+hold on
 end
-HG_FingersWholeBandR2Vel.EnvDeltaWOutMean=R2FingersVel;
-HG_FingersWholeBandR2Pos.EnvDeltaWOutMean=R2FingersPos;
+subplot(1,2,1)
+legend('Lag0','Lag1','Lag2','Lag3','Lag4')
+subplot(1,2,2)
+legend('Lag0','Lag1','Lag2','Lag3','Lag4')
+
+HighQualityFigs('RML_HGDirectLFO_SigChs')
+
 
 R2FingersVel=[];
 R2FingersPos=[];
@@ -2251,19 +2313,49 @@ end
 HG_FingersAvgSubBandsR2Vel.PureEnv=R2FingersVel;
 HG_FingersAvgSubBandsR2Pos.PureEnv=R2FingersPos;
 
+
+figure(1);
+set(gcf, 'Position', [100, 100, 800, 600]);
+for LagN =0:4
+    Figures=0;
 R2FingersVel=[];
 R2FingersPos=[];
 for Fi=1:5
-    Input_dynamics=abs(hilbert(HG_FingersAvgSubBands(Fi).EnvDeltaWOutMean));
+    Input_dynamics0=abs(hilbert(HG_FingersAvgSubBands(Fi).EnvDeltaWOutMean));
+    Input_dynamics = Input_dynamics0(:,Electrodes);
     Output_DynamicsVel=Kin_Vel{1,Fi}(1:end);
     Output_DynamicsPos=Kin_Pos{1,Fi}(1:end);
-    R2Vel=MultipleRegFunc(Fi,Input_dynamics,Output_DynamicsVel,Figures);
+    R2Vel=MultipleRegFuncLag(Fi,Input_dynamics,Output_DynamicsVel,LagN,Figures);
     R2FingersVel=[R2FingersVel,R2Vel];
-    R2Pos=MultipleRegFunc(Fi,Input_dynamics,Output_DynamicsPos,Figures);
+    R2Pos=MultipleRegFuncLag(Fi,Input_dynamics,Output_DynamicsPos,LagN,Figures);
     R2FingersPos=[R2FingersPos,R2Pos];
 end
 HG_FingersAvgSubBandsR2Vel.EnvDeltaWOutMean=R2FingersVel;
 HG_FingersAvgSubBandsR2Pos.EnvDeltaWOutMean=R2FingersPos;
+subplot(1,2,1)
+plot(R2FingersVel)
+xlabel('Finger')
+ylabel('Corr^2')
+ylim([0.3,0.7])
+title (' Vel predition using Sig Chs ')
+hold on
+subplot(1,2,2)
+plot(R2FingersPos)
+xlabel('Finger')
+ylabel('Corr^2')
+ylim([0.3,0.7])
+title (' Pos predition using Sig Chs ')
+hold on
+end
+subplot(1,2,1)
+legend('Lag0','Lag1','Lag2','Lag3','Lag4')
+subplot(1,2,2)
+legend('Lag0','Lag1','Lag2','Lag3','Lag4')
+
+HighQualityFigs('RML_HGAvgLFO_SigChs')
+
+
+
 
 R2FingersVel=[];
 R2FingersPos=[];
