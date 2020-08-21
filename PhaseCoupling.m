@@ -116,7 +116,7 @@ HighQualityFigs('hist2D_PAC_PA')
 % showing significant channels on brain map per finger
 load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\EC171_rh_pial.mat')
 load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\TDT_elecs_all.mat')
-
+Sig_Fis = zeros(256,5);
 % for direct HG
 for Fi=1:5
     PValuesDirect=[];
@@ -124,6 +124,7 @@ for Fi=1:5
         PValuesDirect=[PValuesDirect; FingerPAC(Fi).PValues.WholeHG.ValueCh(ch)];
     end
     SigChs_Fingers=find(PValuesDirect<0.05); %significant
+    Sig_Fis(SigChs_Fingers,Fi) =1;
     % PValuesDirect(find(PValuesDirect>=0.05))=0; % not significant
     subplot(2,3,Fi)
     ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(0*PValuesDirect),'rh'); % rho is a 256ch vector
@@ -132,7 +133,21 @@ for Fi=1:5
     title(['Finger',num2str(Fi)]);
     %colorbar     
 end
-HighQualityFigs('WholeMove_PAC_PA_Grid_Direct')
+
+Sig_Chs = sum(Sig_Fis');
+Sig_Chs = Sig_Chs';
+subplot(2,3,6)
+ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(0*Sig_Chs),'rh'); % rho is a 256ch vector
+el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
+for ch = 1:256
+    if Sig_Chs(ch)>0
+        el_add(elecmatrix(ch+65,:),'msize',Sig_Chs(ch)*1.5,'color','r');
+    end
+end
+title(['All Fingers']);
+
+HighQualityFigs('WholeMove_PAC_PA_Grid_Direct_2')
+   
 
 % for avg HG
 for Fi=1:5

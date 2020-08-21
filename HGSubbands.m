@@ -1032,6 +1032,7 @@ end
 
 Kin_Pos={Posq_F1(:,1) Posq_F2(:,3) Posq_F3(:,3) Posq_F4(:,3) Posq_F5(:,3)};
 Kin_Vel={AbsVel_F1 AbsVel_F2 AbsVel_F3 AbsVel_F4 AbsVel_F5};
+%save('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V2/Kinematics.mat','Kin_Pos','Kin_Vel')
 
 %ch=logical(All_Index_Hand);
 ch=[90:94,106:110];

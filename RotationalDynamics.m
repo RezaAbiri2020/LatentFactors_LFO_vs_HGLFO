@@ -200,71 +200,109 @@ close all
 
 % Give the data for cross validating the PCs using A matrix
 % input data from single trials:
-Fi = 5;
-% choose an input: flexion or extention
-% 
-Trials = Single_Trials(Fi).Fs(Fi).LFO;
-ERP_Trials = ERPs.Fs(Fi).LFO(:,Electrodes);
-PCs_Trials = PCA.Fs.LFO(Fi).Score;
-Coeff_cv = PCA.Fs.LFO(Fi).Coeff;
+% showing significant channels on brain map per finger
+load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\EC171_rh_pial.mat')
+load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\TDT_elecs_all.mat')
 
-% Trials = Single_Trials(Fi).Fs(Fi).HG_Direct_LFO;
-% ERP_Trials=ERPs.Fs(Fi).HG_Direct_LFO(:,Electrodes);
-% PCs_Trials = PCA.Fs.HG_Direct_LFO(Fi).Score;
-% Coeff_cv = PCA.Fs.HG_Direct_LFO(Fi).Coeff;
-
-% Trials = Single_Trials(Fi).Fs(Fi).HG_Avg_LFO;
-% ERP_Trials=ERPs.Fs(Fi).HG_Avg_LFO(:,Electrodes);
-% PCs_Trials = PCA.Fs.HG_Avg_LFO(Fi).Score;
-% Coeff_cv = PCA.Fs.HG_Avg_LFO(Fi).Coeff;
-
-% cross validation
-%Input_dynamics=PCs_Trials(:,1:2);
-Input_dynamics=[PCs_Trials(:,1),PCs_Trials(:,2)];
-Output_Dynamics=[[0;diff(PCs_Trials(:,1))], [0;diff(PCs_Trials(:,2))]];
-
-for i = 0:1:2*win-1
-    Input_new = circshift(Input_dynamics,i);
-    Output_new = circshift(Output_Dynamics,i);
+for Fi = 1:5
+    % choose an input: flexion or extention
+    %
+%     Trials = Single_Trials(Fi).Fs(Fi).LFO;
+%     ERP_Trials = ERPs.Fs(Fi).LFO(:,Electrodes);
+%     PCs_Trials = PCA.Fs.LFO(Fi).Score;
+%     Coeff_cv = PCA.Fs.LFO(Fi).Coeff;
     
-    Input_train_OB = Input_new(1:end-1,:);
-    Output_Train_OB = Output_new(1:end-1,:);
+    Trials = Single_Trials(Fi).Fs(Fi).HG_Direct_LFO;
+    ERP_Trials=ERPs.Fs(Fi).HG_Direct_LFO(:,Electrodes);
+    PCs_Trials = PCA.Fs.HG_Direct_LFO(Fi).Score;
+    Coeff_cv = PCA.Fs.HG_Direct_LFO(Fi).Coeff;
     
-    A=pinv(Input_train_OB'*Input_train_OB)*(Input_train_OB'*Output_Train_OB);
-    A_all(:,:,i+1) = A;
+    % Trials = Single_Trials(Fi).Fs(Fi).HG_Avg_LFO;
+    % ERP_Trials=ERPs.Fs(Fi).HG_Avg_LFO(:,Electrodes);
+    % PCs_Trials = PCA.Fs.HG_Avg_LFO(Fi).Score;
+    % Coeff_cv = PCA.Fs.HG_Avg_LFO(Fi).Coeff;
     
-    Output_train_Pre=Input_train_OB*A;
-    Input_train_Pre = Output_Train_OB*pinv(A);
+    % cross validation
+    %Input_dynamics=PCs_Trials(:,1:2);
+    Input_dynamics=[PCs_Trials(:,1),PCs_Trials(:,2)];
+    Output_Dynamics=[[0;diff(PCs_Trials(:,1))], [0;diff(PCs_Trials(:,2))]];
     
-    if i<10
-        save('AMatrix.mat','A')
-        tspan=[0,10000];
-        icond={[0,3]};
-        figure;
-        PhasePlane(@system1,tspan,icond,'Xlim',[-5 5],'Ylim',[-5 5],...
-            'ArrowHeads',true,'ArrowSize',1);
-        figure;
-        subplot(2,1,1)
-        plot(Input_train_OB(:,1)); hold on; plot(Input_train_Pre(:,1),'r-','linewidth',1);
-        corr1=corr(Input_train_OB(:,1),Input_train_Pre(:,1));
-        title(['Train: PC1: ',num2str(corr1^2)])
-        subplot(2,1,2)
-        plot(Input_train_OB(:,2)); hold on; plot(Input_train_Pre(:,2),'r-','linewidth',1);
-        corr2=corr(Input_train_OB(:,2),Input_train_Pre(:,2));
-        title(['Train: PC2: ',num2str(corr2^2)])
+    for i = 0:1:2*win-1
+        Input_new = circshift(Input_dynamics,i);
+        Output_new = circshift(Output_Dynamics,i);
+        
+        Input_train_OB = Input_new(1:end-1,:);
+        Output_Train_OB = Output_new(1:end-1,:);
+        
+        A=pinv(Input_train_OB'*Input_train_OB)*(Input_train_OB'*Output_Train_OB);
+        A_all(:,:,i+1) = A;
+        
+        Output_train_Pre=Input_train_OB*A;
+        Input_train_Pre = Output_Train_OB*pinv(A);
+        
+        if i<0
+            save('AMatrix.mat','A')
+            tspan=[0,10000];
+            icond={[0,3]};
+            figure;
+            PhasePlane(@system1,tspan,icond,'Xlim',[-5 5],'Ylim',[-5 5],...
+                'ArrowHeads',true,'ArrowSize',1);
+            figure;
+            subplot(2,1,1)
+            plot(Input_train_OB(:,1)); hold on; plot(Input_train_Pre(:,1),'r-','linewidth',1);
+            corr1=corr(Input_train_OB(:,1),Input_train_Pre(:,1));
+            title(['Train: PC1: ',num2str(corr1^2)])
+            subplot(2,1,2)
+            plot(Input_train_OB(:,2)); hold on; plot(Input_train_Pre(:,2),'r-','linewidth',1);
+            corr2=corr(Input_train_OB(:,2),Input_train_Pre(:,2));
+            title(['Train: PC2: ',num2str(corr2^2)])
+        end
+        
     end
+    % mean of A matrices and coeffs and observing roatinal dynamics
+    A_cv = squeeze(mean(A_all,3));
+    %save('A_LFO_AllChs.mat','A_cv')
+    %save('A_LFO_SigChs.mat','A_cv')
+    %save('A_HGDirectLFO_AllChs.mat','A_cv')
+    %save('A_HGDirectLFO_SigChs.mat','A_cv')
+    %save('A_HGAvgLFO_AllChs.mat','A_cv')
+    %save('A_HGAvgLFO_SigChs.mat','A_cv')
     
+    Eig_value = eig(A_cv);
+    Freq(Fi) = sqrt(abs(imag(Eig_value(1))));
+    for pc =1:2
+        PC_values = zeros(256,1);
+        PC_values(Selected_Chs)= Coeff_cv(:,pc);
+        PC_values = abs(PC_values);
+        PC_values=normalize(PC_values ,'range');
+        
+        figure(1);
+        subplot(2,5,Fi+(pc-1)*5)
+        ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(0*PC_values),'rh'); % rho is a 256ch vector
+        el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
+        for ch = 1:256
+            if PC_values(ch) == 0
+                Magnifier = min(nonzeros(PC_values));
+            else
+                Magnifier =PC_values(ch);
+            end
+            el_add(elecmatrix(ch+65,:),'msize',Magnifier*5,'color','r');
+        end
+        title(['Finger',num2str(Fi),' PC',num2str(pc)]);
+    end
+    %colorbar
+        
 end
 
-close all
-% mean of A matrices and coeffs and observing roatinal dynamics
-A_cv = squeeze(mean(A_all,3));
-%save('A_LFO_AllChs.mat','A_cv')
-%save('A_LFO_SigChs.mat','A_cv')
-%save('A_HGDirectLFO_AllChs.mat','A_cv')
-%save('A_HGDirectLFO_SigChs.mat','A_cv')
-%save('A_HGAvgLFO_AllChs.mat','A_cv')
-%save('A_HGAvgLFO_SigChs.mat','A_cv')
+figure;
+set(gcf, 'Position', [100, 100, 800, 500]);
+plot(Freq)
+xlabel('Finger')
+xticks(1:5)
+ylabel('Radian/s')
+title (' Rotation Freq for HG-LFO')
+set(gca,'fontsize',14)
+
 
 % solving for cross validated phase plane
 A = A_cv;
@@ -743,6 +781,80 @@ legend('Observed','Predicted')
 Corr_Value= corrcoef(PCs_Observed(:,2),PCs_Predicted(:,2));
 title(['ERP-Trials; PC2; Cross Validated; R2:',num2str(Corr_Value(1,2).^2)])
 
+%% finding significant channel in sequence peacking using predicted ERP within a band LFO or HG
+
+load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\EC171_rh_pial.mat')
+load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\TDT_elecs_all.mat')
+
+for Fi = 1:5
+    % choose an input: flexion or extention
+    %
+%     Trials = Single_Trials(Fi).Fs(Fi).LFO;
+%     ERP_Trials = ERPs.Fs(Fi).LFO(:,Electrodes);
+%     PCs_Trials = PCA.Fs.LFO(Fi).Score;
+%     Coeff_cv = PCA.Fs.LFO(Fi).Coeff;
+    
+    Trials = Single_Trials(Fi).Fs(Fi).HG_Direct_LFO;
+    ERP_Trials=ERPs.Fs(Fi).HG_Direct_LFO(:,Electrodes);
+    PCs_Trials = PCA.Fs.HG_Direct_LFO(Fi).Score;
+    Coeff_cv = PCA.Fs.HG_Direct_LFO(Fi).Coeff;
+%     
+    % cross validation
+    %Input_dynamics=PCs_Trials(:,1:2);
+    Input_dynamics=[PCs_Trials(:,1),PCs_Trials(:,2)];
+    Output_Dynamics=[[0;diff(PCs_Trials(:,1))], [0;diff(PCs_Trials(:,2))]];
+    
+    for i = 0:1:2*win-1
+        Input_new = circshift(Input_dynamics,i);
+        Output_new = circshift(Output_Dynamics,i);
+        
+        Input_train_OB = Input_new(1:end-1,:);
+        Output_Train_OB = Output_new(1:end-1,:);
+        
+        A=pinv(Input_train_OB'*Input_train_OB)*(Input_train_OB'*Output_Train_OB);
+        A_all(:,:,i+1) = A;
+        
+        Output_train_Pre=Input_train_OB*A;
+        Input_train_Pre = Output_Train_OB*pinv(A);
+                
+    end
+    % mean of A matrices and coeffs and observing roatinal dynamics
+    A_cv = squeeze(mean(A_all,3));
+    % projection to PC
+    PCs_Observed = [PCs_Trials(:,1),PCs_Trials(:,2)];
+    % prediction of values
+    PCs_Predicted = [0,0;diff(PCs_Observed)]*pinv(A_cv);
+    
+    Coeff_ERP = Coeff_cv(:,1:2);
+    ERP_Predicted = PCs_Predicted*pinv(Coeff_ERP);
+    ERP_Observed = ERP_Trials;
+    
+    % plot and compare the sequence peacking between the two ERP
+    data1=ERP_Predicted;
+    data2=zeros(size(data1));
+    for i=1:size(ERP_Observed,2)
+        data2(:,i)=normalize(data1(:,i),'range');
+    end
+    data3=data2';
+    Rows=[];
+    for i=1:2*win
+        [m,n]=max(data3(:,i));
+        if isempty(find(Rows==n))
+            Rows=[Rows;n];
+        end
+        
+    end
+    
+    figure(1);
+    subplot(2,3,Fi)
+    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(zeros(256,1)),'rh'); % rho is a 256ch vector
+    el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
+    el_add(elecmatrix(Rows+65,:),'msize',5,'color','r');
+    title(['Finger',num2str(Fi)]);
+
+end
+
+
 %% checking sequence peacking using ERP real and predicted ERP within a band LFO or HG
 
 % ERP real --->  PCs_Observed ---> PCs_Predicted ---> predicted ERP? 
@@ -780,7 +892,7 @@ end
 OrderedData=data3(Rows,:);
 figure;
 set(gcf, 'Position', [300, 100, 700,850]);
-suptitle(['LFO ERP-Pre Ordered by OB; Finger: ',num2str(Fi)]);
+suptitle(['LFO ERP-Predicted ; Finger: ',num2str(Fi)]);
 imagesc(OrderedData)
 colorbar
 yticks('')

@@ -1052,8 +1052,8 @@ end
 %% Choose the electrodes/section to do the MLR analysis
 load('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V2\SigChs_Logical.mat')
 
-%Electrodes = Selected_Chs;
-Electrodes = SigChs_All;
+Electrodes = Selected_Chs;
+%Electrodes = SigChs_All;
 %Electrodes = Selected_HandChs;
 %Electrodes = Selected_PMChs;
 %Electrodes = Selected_SMChs;
@@ -1071,14 +1071,16 @@ Kin_Vel={AbsVel_F1 AbsVel_F2 AbsVel_F3 AbsVel_F4 AbsVel_F5};
 figure(1);
 set(gcf, 'Position', [100, 100, 800, 600]);
 
-for LagN =0:4
+% with lags
+for LagN =0%:4
 Figures=0;
 
 % prediction the velocities and positions and cacculating the R2
 R2FingersVel=[];
 R2FingersPos=[];
-for Fi=1:5
-    Input_dynamics=Delta_Fingers(Fi).Hilbert(:,Electrodes);
+for Fi=5%:5
+    Input_dynamics0=Delta_Fingers(Fi).Hilbert(:,Electrodes);
+    Input_dynamics = SgolayFunc(Input_dynamics0);
     Output_DynamicsVel=Kin_Vel{1,Fi}(1:end);
     Output_DynamicsPos=Kin_Pos{1,Fi}(1:end);
     R2Vel=MultipleRegFuncLag(Fi,Input_dynamics,Output_DynamicsVel,LagN,Figures);
@@ -1107,7 +1109,60 @@ subplot(1,2,2)
 legend('Lag0','Lag1','Lag2','Lag3','Lag4')
 ylim([0.3,0.55])
 
-HighQualityFigs('RML_LFO_SigChs')
+% for calculating the weights and obsrve on grid brain
+load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\EC171_rh_pial.mat')
+load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\TDT_elecs_all.mat')
+for Fi=1:5
+    WeightVel=[];
+    WeightPos=[];
+    Figures =0;
+    Input_dynamics=Delta_Fingers(Fi).Hilbert(:,Electrodes);
+    Output_DynamicsVel=Kin_Vel{1,Fi}(1:end);
+    Output_DynamicsPos=Kin_Pos{1,Fi}(1:end);
+    WeightVel=MultipleRegFuncCalWeight(Fi,Input_dynamics,Output_DynamicsVel,Figures);
+    WeightPos=MultipleRegFuncCalWeight(Fi,Input_dynamics,Output_DynamicsPos,Figures);
+    
+    Weights_vel = zeros(256,1);
+    Weights_vel(Selected_Chs) = WeightVel(2:end);
+    Weights_vel = abs(Weights_vel);
+    Weights_vel=normalize(Weights_vel ,'range');
+    
+    Weights_Pos = zeros(256,1);
+    Weights_Pos(Selected_Chs) = WeightPos(2:end);
+    Weights_Pos = abs(Weights_Pos);
+    Weights_Pos=normalize(Weights_Pos ,'range');
+    
+    figure(1);
+    subplot(2,5,Fi)
+    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(0*Weights_vel),'rh'); % rho is a 256ch vector
+    el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
+    for ch = 1:256
+        if Weights_vel(ch) == 0
+            Magnifier = min(nonzeros(Weights_vel));
+        else
+            Magnifier =Weights_vel(ch);
+        end
+        el_add(elecmatrix(ch+65,:),'msize',Magnifier*7,'color','r');
+    end
+    title(['Finger',num2str(Fi),' Wvelocity']);
+    
+    subplot(2,5,Fi+5)
+    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(0*Weights_Pos),'rh'); % rho is a 256ch vector
+    el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
+    for ch = 1:256
+        if Weights_Pos(ch) == 0
+            Magnifier = min(nonzeros(Weights_Pos));
+        else
+            Magnifier =Weights_Pos(ch);
+        end
+        el_add(elecmatrix(ch+65,:),'msize',Magnifier*7,'color','r');
+    end
+    title(['Finger',num2str(Fi),' Wposition']);
+      
+end
+
+
+%HighQualityFigs('RML_LFO_SigChs')
 
 %% save R2s for delta
 
@@ -1390,6 +1445,7 @@ end
 HG_FingersWholeBandR2Vel.PureEnv=R2FingersVel;
 HG_FingersWholeBandR2Pos.PureEnv=R2FingersPos;
 
+% for using lag
 figure(1);
 set(gcf, 'Position', [100, 100, 800, 600]);
 for LagN =0:4
@@ -1429,6 +1485,60 @@ subplot(1,2,2)
 legend('Lag0','Lag1','Lag2','Lag3','Lag4')
 
 HighQualityFigs('RML_HGDirectLFO_SigChs')
+
+% for calculating the weights and obsrrve on grid brain
+load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\EC171_rh_pial.mat')
+load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\TDT_elecs_all.mat')
+load('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1\HG_Direct_LFO_Signals.mat')
+for Fi=1:5
+    WeightVel=[];
+    WeightPos=[];
+    Figures =0;
+    Input_dynamics0=abs(hilbert(HG_Direct_LFO_Signals(Fi).DeltaofEnv));
+    Input_dynamics = Input_dynamics0(:,Electrodes);
+    Output_DynamicsVel=Kin_Vel{1,Fi}(1:end);
+    Output_DynamicsPos=Kin_Pos{1,Fi}(1:end);
+    WeightVel=MultipleRegFuncCalWeight(Fi,Input_dynamics,Output_DynamicsVel,Figures);
+    WeightPos=MultipleRegFuncCalWeight(Fi,Input_dynamics,Output_DynamicsPos,Figures);
+    
+    Weights_vel = zeros(256,1);
+    Weights_vel(Selected_Chs) = WeightVel(2:end);
+    Weights_vel = abs(Weights_vel);
+    Weights_vel=normalize(Weights_vel ,'range');
+    
+    Weights_Pos = zeros(256,1);
+    Weights_Pos(Selected_Chs) = WeightPos(2:end);
+    Weights_Pos = abs(Weights_Pos);
+    Weights_Pos=normalize(Weights_Pos ,'range');
+    
+    figure(1);
+    subplot(2,5,Fi)
+    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(0*Weights_vel),'rh'); % rho is a 256ch vector
+    el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
+    for ch = 1:256
+        if Weights_vel(ch) == 0
+            Magnifier = min(nonzeros(Weights_vel));
+        else
+            Magnifier =Weights_vel(ch);
+        end
+        el_add(elecmatrix(ch+65,:),'msize',Magnifier*7,'color','r');
+    end
+    title(['Finger',num2str(Fi),' Wvelocity']);
+    
+    subplot(2,5,Fi+5)
+    ctmr_gauss_plot(cortex,elecmatrix(65:320,:),(0*Weights_Pos),'rh'); % rho is a 256ch vector
+    el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
+    for ch = 1:256
+        if Weights_Pos(ch) == 0
+            Magnifier = min(nonzeros(Weights_Pos));
+        else
+            Magnifier =Weights_Pos(ch);
+        end
+        el_add(elecmatrix(ch+65,:),'msize',Magnifier*7,'color','r');
+    end
+    title(['Finger',num2str(Fi),' Wposition']);
+      
+end
 
 
 R2FingersVel=[];
