@@ -1,5 +1,5 @@
 
-% performing Dimensionality Reduction using ERP and PCA 
+%  performing Dimensionality Reduction using ERP and PCA 
 
 close all;
 clear all;
