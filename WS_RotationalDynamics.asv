@@ -1,35 +1,31 @@
 
-
-% analysis for HG-Direct-LFO
-% analysis for HG-Avg-LFO
-% adding brain-area based analysis
-% adding analysis using sig channels
+% analysis for whole grid
 % cross validation of A matrix for LFO and HG
 
 clear all
 close all
 clc
-% load signals:
-load('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1\LFO_signals.mat')
-load('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1\HG_Direct_LFO_Signals.mat')
-load('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1\HG_Avg_LFO_Signals.mat')
 
-% in case of using indexing for flexsion/extension
-load('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V1\FingersKinIndexes.mat')
+%% load the related data for the subject
+
+% subject 1
+load('E:\ECoGLeapMotion\ResultsGroupAnalysis\github_Branch_V3\Subject1.mat')
+% subject 2
+load('E:\ECoGLeapMotion\ResultsGroupAnalysis\github_Branch_V3\Subject2.mat')
+% subject 3
+load('E:\ECoGLeapMotion\ResultsGroupAnalysis\github_Branch_V3\Subject3.mat')
+
 
 %% 1- performing general ERP for trials and signals based on max vel 
 % window for analysis
 win = 250;
 
 for Fi = 1:5
-    HG_Direct = [];
-    HG_Avg = [];
+    HGLFO = [];
     LFO_trials = [];
-    HG_Direct_trials = [];
-    HG_Avg_trials = [];
+    HG_trials = [];
     
-    HG_Direct = abs(hilbert(HG_Direct_LFO_Signals(Fi).DeltaofEnv));
-    HG_Avg = abs(hilbert(HG_Avg_LFO_Signals(Fi).DeltaofEnv));
+    HGLFO = abs(hilbert(HG_Direct_LFO_Signals(Fi).DeltaofEnv));
     
     for j = 1:length(FingersKinIndexes.Finger(Fi).Fs_MaxVel)
         
@@ -71,8 +67,6 @@ end
 
 
 %% 2- choose the brain area or significant channels for next section
-load('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V2\BrainAreas_Logical.mat')
-load('E:\ECoGLeapMotion\DataPatientTwo\github_Branch_V2\SigChs_Logical.mat')
 
 Electrodes = Selected_Chs;
 %Electrodes = SigChs_All;
@@ -194,8 +188,6 @@ for Fi=1:5
     
 end
 
-% plot the PC weights on grid
-close all
 %% 4-1: Nik method: rotational dynamics for the first 2PC with cross validation and plots 
 
 % Give the data for cross validating the PCs using A matrix
