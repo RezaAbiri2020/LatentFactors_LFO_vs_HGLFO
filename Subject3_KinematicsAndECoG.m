@@ -24,7 +24,7 @@ Reference=1; % for median
 %Reference=2; % for mean 
 
 %% loading and breaking raw ECoG data into trials
-load('E:\ECoGLeapMotion\DataPatientThree\ECoGData\EC176_ecog_kinematics_25Hz.mat');
+load('/media/reza/WindowsDrive/ECoGLeapMotion/DataPatientThree/ECoGData/EC176_ecog_kinematics_25Hz.mat');
 
 if 0
     for i=257:260
@@ -560,6 +560,6 @@ end
 
 %% save related data
 % Fs, FingersKinData, FingersKinInfo, Selected_Chs,    
-save('E:\ECoGLeapMotion\ResultsGroupAnalysis\github_Branch_V3/Subject3.mat',...
+save('/media/reza/WindowsDrive/ECoGLeapMotion/ResultsGroupAnalysis/github_Branch_V3/WS3_KinECoG.mat',...
     'ECoG_data','FingersKinData','FingersKinInfo','Fs');
 

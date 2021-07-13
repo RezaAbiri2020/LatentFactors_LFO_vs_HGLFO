@@ -25,7 +25,7 @@ Reference=1; % for median
 %Reference=2; % for mean 
 
 %% loading and breaking raw ECoG data into trials
-load('E:\ECoGLeapMotion\DataPatientOne\ECoGData\EC169_ecog_kinematics_25Hz.mat');
+load('/media/reza/WindowsDrive/ECoGLeapMotion/DataPatientOne/ECoGData/EC169_ecog_kinematics_25Hz.mat');
 
 if 0
     for i=193:256

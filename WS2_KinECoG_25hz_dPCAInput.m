@@ -138,6 +138,6 @@ end
 
 %% save related data
 % Fs, FingersKinData, FingersKinInfo, Selected_Chs,    
-save('/media/reza/WindowsDrive/ECoGLeapMotion/ResultsGroupAnalysis/github_Branch_V3/Subject2_NikMethod.mat',...
-    'ECoG_lfo','ECoG_hglfo');
+%save('/media/reza/WindowsDrive/ECoGLeapMotion/ResultsGroupAnalysis/github_Branch_V3/Subject2_NikMethod.mat',...
+%    'ECoG_lfo','ECoG_hglfo');
 

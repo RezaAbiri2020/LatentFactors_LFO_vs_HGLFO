@@ -14,11 +14,16 @@ clc
 % load the related data for the subject
 
 % subject 1
-load('E:\ECoGLeapMotion\ResultsGroupAnalysis\github_Branch_V3\Subject1.mat')
+load('/media/reza/WindowsDrive/ECoGLeapMotion/ResultsGroupAnalysis/github_Branch_V3/WS1_KinECoG.mat')
+
 % subject 2
-load('E:\ECoGLeapMotion\ResultsGroupAnalysis\github_Branch_V3\Subject2.mat')
+load('/media/reza/WindowsDrive/ECoGLeapMotion/ResultsGroupAnalysis/github_Branch_V3/WS2_KinECoG.mat')
+
 % subject 3
-load('E:\ECoGLeapMotion\ResultsGroupAnalysis\github_Branch_V3\Subject3.mat')
+load('/media/reza/WindowsDrive/ECoGLeapMotion/ResultsGroupAnalysis/github_Branch_V3/WS3_KinECoG.mat')
+
+% subject 4
+load('/media/reza/WindowsDrive/ECoGLeapMotion/ResultsGroupAnalysis/github_Branch_V3/WS4_KinECoG.mat')
 
 
 
@@ -82,12 +87,23 @@ for Fi=1:5
 end
 
 %% 1-2 saving
-save('E:\ECoGLeapMotion\ResultsGroupAnalysis\github_Branch_V3\WS2_PAC.mat','FingerPAC','-v7.3')
+% for subject 1 
+save('/media/reza/WindowsDrive/ECoGLeapMotion/ResultsGroupAnalysis/github_Branch_V3/WS1_PAC.mat','FingerPAC','-v7.3')
+
+% for subject 2
+save('/media/reza/WindowsDrive/ECoGLeapMotion/ResultsGroupAnalysis/github_Branch_V3/WS2_PAC.mat','FingerPAC','-v7.3')
+
+% for subject 3
+save('/media/reza/WindowsDrive/ECoGLeapMotion/ResultsGroupAnalysis/github_Branch_V3/WS3_PAC.mat','FingerPAC','-v7.3')
+
+% for subject 4
+save('/media/reza/WindowsDrive/ECoGLeapMotion/ResultsGroupAnalysis/github_Branch_V3/WS4_PAC.mat','FingerPAC','-v7.3')
+
 
 %% 1-3 some example plots 
-% example plot of observation
+% example plot of observation; choose a significant channel
 Fi=5;
-ch=106;
+ch=18;
 figure;
 set(gcf, 'Position', [100, 100, 800, 600]);
 hist(FingerPAC(Fi).ValueCh(ch).ZScAll,100)
@@ -95,9 +111,9 @@ hold on
 vline(FingerPAC(Fi).ValueCh(ch).ZScAll(1),'color','r')
 xlabel('Zsc values of PAC')
 ylabel('Repetation of Observations')
-title (' Permutation test of PAC; Fi=5; Ch=106')
+title (['Permutation test of PAC; Fi: ',num2str(Fi),' Ch:', num2str(ch)])
 set(gca,'fontsize',14)
-HighQualityFigs('PAC_PA_Permutation')
+HighQualityFigs('S1_PAC_PA_Permutation')
 
 % example stem plot of p-values for all channels per finger with hline in 0.05
 Fi=1;
@@ -123,6 +139,64 @@ ylabel('Amplitude HG')
 zlabel('Number of repetition')
 %HighQualityFigs('hist2D_PAC_PA')
 
+%% 1-4 Subject1: showing significant channels on grid per finger & sig channels in brain areas 
+
+SigChs_Fingers=logical(zeros(length(Selected_Chs),5));
+for Fi=1:5
+    PValues=[];
+    for ch=1:length(Selected_Chs)
+        if Selected_Chs(ch)
+            PValues=[PValues; FingerPAC(Fi).PValues.ValueCh(ch)];
+        end
+    end
+    SigChs_Fingers(find(PValues<=0.05),Fi)=1; %significant
+end
+
+% all significant channels across fingers
+SigChs_All=zeros(length(Selected_Chs),1);
+SigChs_All=sum(SigChs_Fingers,2);
+
+% showing significant channels on brain map per finger and all finger
+% toghether
+load('/media/reza/WindowsDrive/ECoGLeapMotion/DataPatientOne/ImagingData/clinical_elecs_all_EC169.mat')
+load('/media/reza/WindowsDrive/ECoGLeapMotion/DataPatientOne/ImagingData/EC169_lh_pial.mat')
+
+for Fi=1:6
+    if Fi<6
+        subplot(2,3,Fi)
+        ctmr_gauss_plot(cortex,elecmatrix(1:256,:),zeros(length(Selected_Chs),1),'lh'); % rho is a 256ch vector
+        el_add(elecmatrix(1:256,:),'msize',1.7); % for plotting channels on brain
+        el_add(elecmatrix(find(SigChs_Fingers(:,Fi)==1),:),'msize',5,'color','r');
+        title(['Finger',num2str(Fi)]);
+    elseif Fi==6
+        subplot(2,3,Fi)
+        ctmr_gauss_plot(cortex,elecmatrix(1:256,:),zeros(256,1),'lh'); % rho is a 256ch vector
+        el_add(elecmatrix(1:256,:),'msize',1.7); % for plotting channels on brain
+        for ch = 1:length(Selected_Chs)
+            if SigChs_All(ch)>0  
+                el_add(elecmatrix(ch,:),'msize',2*SigChs_All(ch),'color','r');
+            end
+        end
+        title(['All Fingers']);
+        
+    end   
+end
+
+HighQualityFigs('S1_PAC_SigChs_Grid')
+
+% number of significant ch per brain areas
+SigChs_All = logical(SigChs_All);
+SigChs_PM = SigChs_All.*Selected_PMChs;
+sum(Selected_PMChs)
+sum(SigChs_PM)
+SigChs_SM = SigChs_All.*Selected_SMChs;
+sum(Selected_SMChs)
+sum(SigChs_SM)
+SigChs_Hand = SigChs_All.*Selected_HandChs;
+sum(Selected_HandChs)
+sum(SigChs_Hand)
+
+
 %% 1-4 Subject2: showing significant channels on grid per finger & sig channels in brain areas 
 
 SigChs_Fingers=logical(zeros(length(Selected_Chs),5));
@@ -142,13 +216,13 @@ SigChs_All=sum(SigChs_Fingers,2);
 
 % showing significant channels on brain map per finger and all finger
 % toghether
-load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\EC171_rh_pial.mat')
-load('E:\ECoGLeapMotion\DataPatientTwo\ImagingData\TDT_elecs_all.mat')
+load('/media/reza/WindowsDrive/ECoGLeapMotion/DataPatientTwo/ImagingData/EC171_rh_pial.mat')
+load('/media/reza/WindowsDrive/ECoGLeapMotion/DataPatientTwo/ImagingData/TDT_elecs_all.mat')
 
 for Fi=1:6
     if Fi<6
         subplot(2,3,Fi)
-        ctmr_gauss_plot(cortex,elecmatrix(65:320,:),zeros(length(Selected_Chs),1),'rh'); % rho is a 256ch vector
+        ctmr_gauss_plot(cortex,elecmatrix(65:320,:),zeros(256,1),'rh'); % rho is a 256ch vector
         el_add(elecmatrix(65:320,:),'msize',1.7); % for plotting channels on brain
         el_add(elecmatrix(find(SigChs_Fingers(:,Fi)==1)+65,:),'msize',5,'color','r');
         title(['Finger',num2str(Fi)]);
@@ -166,7 +240,8 @@ for Fi=1:6
     end   
 end
 
-%HighQualityFigs('All_SigChs_Cleared')
+HighQualityFigs('WS2_PAC_SigChs_Grid')
+
 
 % number of significant ch per brain areas
 SigChs_All = logical(SigChs_All);
@@ -179,3 +254,122 @@ sum(SigChs_SM)
 SigChs_Hand = SigChs_All.*Selected_HandChs;
 sum(Selected_HandChs)
 sum(SigChs_Hand)
+
+%% 1-4 Subject3: showing significant channels on grid per finger & sig channels in brain areas 
+
+SigChs_Fingers=logical(zeros(length(Selected_Chs),5));
+for Fi=1:5
+    PValues=[];
+    for ch=1:length(Selected_Chs)
+        if Selected_Chs(ch)
+            PValues=[PValues; FingerPAC(Fi).PValues.ValueCh(ch)];
+        end
+    end
+    SigChs_Fingers(find(PValues<=0.05),Fi)=1; %significant
+end
+
+% all significant channels across fingers
+SigChs_All=zeros(length(Selected_Chs),1);
+SigChs_All=sum(SigChs_Fingers,2);
+
+% showing significant channels on brain map per finger and all finger
+% toghether
+load('/media/reza/WindowsDrive/ECoGLeapMotion/DataPatientThree/ImagingData/clinical_elecs_all_EC176.mat')
+load('/media/reza/WindowsDrive/ECoGLeapMotion/DataPatientThree/ImagingData/EC176_lh_pial.mat')
+%load('/media/reza/WindowsDrive/ECoGLeapMotion/DataPatientThree/ImagingData/EC176_rh_pial.mat')
+
+for Fi=1:6
+    if Fi<6
+        subplot(2,3,Fi)
+        ctmr_gauss_plot(cortex,elecmatrix(1:256,:),zeros(256,1),'lh'); % rho is a 256ch vector
+        el_add(elecmatrix(1:256,:),'msize',1.7); % for plotting channels on brain
+        el_add(elecmatrix(find(SigChs_Fingers(:,Fi)==1),:),'msize',5,'color','r');
+        title(['Finger',num2str(Fi)]);
+    elseif Fi==6
+        subplot(2,3,Fi)
+        ctmr_gauss_plot(cortex,elecmatrix(1:256,:),zeros(256,1),'lh'); % rho is a 256ch vector
+        el_add(elecmatrix(1:256,:),'msize',1.7); % for plotting channels on brain
+        for ch = 1:length(Selected_Chs)
+            if SigChs_All(ch)>0  
+                el_add(elecmatrix(ch,:),'msize',2*SigChs_All(ch),'color','r');
+            end
+        end
+        title(['All Fingers']);
+        
+    end   
+end
+
+HighQualityFigs('WS3_PAC_SigChs_Grid')
+
+% number of significant ch per brain areas
+SigChs_All = logical(SigChs_All);
+SigChs_PM = SigChs_All.*Selected_PMChs;
+sum(Selected_PMChs)
+sum(SigChs_PM)
+SigChs_SM = SigChs_All.*Selected_SMChs;
+sum(Selected_SMChs)
+sum(SigChs_SM)
+SigChs_Hand = SigChs_All.*Selected_HandChs;
+sum(Selected_HandChs)
+sum(SigChs_Hand)
+
+
+%% 1-4 Subject4: showing significant channels on grid per finger & sig channels in brain areas 
+
+SigChs_Fingers=logical(zeros(length(Selected_Chs),5));
+for Fi=1:5
+    PValues=[];
+    for ch=1:length(Selected_Chs)
+        if Selected_Chs(ch)
+            PValues=[PValues; FingerPAC(Fi).PValues.ValueCh(ch)];
+        end
+    end
+    SigChs_Fingers(find(PValues<=0.05),Fi)=1; %significant
+end
+
+% all significant channels across fingers
+SigChs_All=zeros(length(Selected_Chs),1);
+SigChs_All=sum(SigChs_Fingers,2);
+
+% showing significant channels on brain map per finger and all finger
+% toghether
+load('/media/reza/WindowsDrive/ECoGLeapMotion/DataPatientFour/ImagingData/clinical_elecs_all_EC189.mat')
+load('/media/reza/WindowsDrive/ECoGLeapMotion/DataPatientFour/ImagingData/EC189_lh_pial.mat')
+%load('/media/reza/WindowsDrive/ECoGLeapMotion/DataPatientThree/ImagingData/EC189_rh_pial.mat')
+
+for Fi=1:6
+    if Fi<6
+        subplot(2,3,Fi)
+        ctmr_gauss_plot(cortex,elecmatrix(1:256,:),zeros(256,1),'lh'); % rho is a 256ch vector
+        el_add(elecmatrix(1:256,:),'msize',1.7); % for plotting channels on brain
+        el_add(elecmatrix(find(SigChs_Fingers(:,Fi)==1),:),'msize',5,'color','r');
+        title(['Finger',num2str(Fi)]);
+    elseif Fi==6
+        subplot(2,3,Fi)
+        ctmr_gauss_plot(cortex,elecmatrix(1:256,:),zeros(256,1),'lh'); % rho is a 256ch vector
+        el_add(elecmatrix(1:256,:),'msize',1.7); % for plotting channels on brain
+        for ch = 1:length(Selected_Chs)
+            if SigChs_All(ch)>0  
+                el_add(elecmatrix(ch,:),'msize',2*SigChs_All(ch),'color','r');
+            end
+        end
+        title(['All Fingers']);
+        
+    end   
+end
+
+HighQualityFigs('WS4_PAC_SigChs_Grid')
+
+% number of significant ch per brain areas
+SigChs_All = logical(SigChs_All);
+SigChs_PM = SigChs_All.*Selected_PMChs;
+sum(Selected_PMChs)
+sum(SigChs_PM)
+SigChs_SM = SigChs_All.*Selected_SMChs;
+sum(Selected_SMChs)
+sum(SigChs_SM)
+SigChs_Hand = SigChs_All.*Selected_HandChs;
+sum(Selected_HandChs)
+sum(SigChs_Hand)
+
+

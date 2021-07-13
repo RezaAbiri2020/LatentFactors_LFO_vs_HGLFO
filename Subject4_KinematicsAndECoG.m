@@ -1,3 +1,6 @@
+
+%% the following code is for Subject 3; should be totally modified for subject 4
+
 % analyzing the Kinematics data and ECoG data. 
 % in this version; save:
 % 1- frequency of recording  
@@ -24,7 +27,7 @@ Reference=1; % for median
 %Reference=2; % for mean 
 
 %% loading and breaking raw ECoG data into trials
-load('E:\ECoGLeapMotion\DataPatientFour\ECoGData\ecog_kinematics_25Hz.mat');
+load('/media/reza/WindowsDrive/ECoGLeapMotion/DataPatientFour/ECoGData/ecog_kinematics_25Hz.mat');
 
 if 0
     for i=257:260
@@ -560,6 +563,6 @@ end
 
 %% save related data
 % Fs, FingersKinData, FingersKinInfo, Selected_Chs,    
-save('E:\ECoGLeapMotion\ResultsGroupAnalysis\github_Branch_V3/Subject3.mat',...
+save('E:\ECoGLeapMotion\ResultsGroupAnalysis\github_Branch_V3/Subject4.mat',...
     'ECoG_data','FingersKinData','FingersKinInfo','Fs');
 

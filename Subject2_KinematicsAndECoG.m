@@ -25,7 +25,7 @@ Reference=1; % for median
 %Reference=2; % for mean 
 
 %% bad channels and time stamps for trials
-load('E:\ECoGLeapMotion\DataPatientTwo\ECoGData\ECoG_data.mat');
+load('/media/reza/WindowsDrive/ECoGLeapMotion/DataPatientTwo/ECoGData/ECoG_data.mat');
 
 % Final list of bad channels by observation and other methods
 BadChs=[65 66 128 128+1 128+2 128+16 128+18 128+20 128+24 128+30 ...
@@ -141,7 +141,7 @@ num_trials =8;
 
 for trial=1:num_trials
     % load trial data
-    filename = 'E:\ECoGLeapMotion\DataPatientTwo/LeapMotionData/20180301/10h02m38s/EC171_20180301_10h02m38s_trial00';
+    filename = '/media/reza/WindowsDrive/ECoGLeapMotion/DataPatientTwo/LeapMotionData/20180301/10h02m38s/EC171_20180301_10h02m38s_trial00';
     load([filename,num2str(trial),'.mat']);
    
     % grab kinematics
